@@ -31,6 +31,21 @@ public sealed class DialogService : IDialogService
         return dialog.ShowDialog(GetOwner()) == true ? dialog.FileName : null;
     }
 
+    public string? PickSaveFile(string title, string filter, string defaultFileName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = title,
+            Filter = filter,
+            FileName = defaultFileName,
+            DefaultExt = ".json",
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        return dialog.ShowDialog(GetOwner()) == true ? dialog.FileName : null;
+    }
+
     public string? Prompt(string title, string label, string? initialValue = null)
     {
         var dialog = new InputDialog(title, label, initialValue);

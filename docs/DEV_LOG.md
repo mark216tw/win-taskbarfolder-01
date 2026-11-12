@@ -1,5 +1,36 @@
 # 開發紀錄
 
+## 2026-11-12 - v1.8.1
+
+### 目標
+
+在設定頁提供分類設定的匯出與匯入，方便備份、還原或移到其他電腦使用；匯入後直接覆蓋目前所有分類。
+
+### 變更
+
+- `Models/GroupExportDocument.cs`、`Models/GroupExportJsonContext.cs`（新增）：分類匯出檔格式與來源產生 JSON 序列化。
+- `Services/GroupTransferService.cs`（新增）：匯出／匯入分類 JSON；匯出先寫暫存檔再覆蓋，匯入驗證格式並為空白或重複分類 ID 重新產生 GUID。
+- `Services/IDialogService.cs`、`Services/DialogService.cs`：新增儲存檔案對話框。
+- `ViewModels/EditorViewModel.cs`：新增匯出／匯入命令；匯入確認後取代分類、立即儲存並同步捷徑，再重新載入圖示。
+- `Views/SettingsWindow.xaml`：新增「分類設定」卡片與匯出／匯入按鈕。
+- `Resources/Strings.resx`：新增匯出／匯入相關繁體中文字串。
+- `Services/EditorBootstrap.cs`、`Services/StartupCoordinator.cs`：註冊並注入 `GroupTransferService`。
+- `tests/TaskbarFolders.Tests/GroupTransferServiceTests.cs`（新增）：匯出匯入來回、排除顯示模式、無效 JSON、空分類、重複 ID 正規化。
+- `Directory.Build.props`：版本 1.8.1、`FileVersion` 1.8.1.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `CHANGELOG.md`、`RELEASE_NOTES.md`、`README.md`、`docs/USER_GUIDE.md`、`docs/ARCHITECTURE.md`、`docs/DESIGN.md`、`docs/DEVELOPMENT.md`：補充功能說明與版本範例。
+
+### 問題與解法
+
+- 匯出檔若包含 `theme` 欄位會與「僅匯出分類」的設計不符 → 改用獨立的 `GroupExportDocument`，只序列化分類資料。
+- 不同來源的分類 JSON 可能有空白或重複 ID，造成捷徑與簽章檔衝突 → 匯入時重新產生重複 ID。
+- 測試以 `DoesNotContain("theme")` 誤判 `themeColor` → 改為檢查 JSON 的 `"theme":` 欄位。
+
+### 待辦 / 已知限制
+
+- 匯入項目若指向其他電腦不存在的路徑，仍會保留設定，啟動時顯示既有錯誤。
+- 匯入不包含顯示模式，匯入後維持目前主題設定。
+- 尚未加入匯入預覽；確認對話框僅顯示分類數量。
+
 ## 2026-11-12 - v1.8.0
 
 ### 目標

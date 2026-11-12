@@ -12,6 +12,7 @@ public sealed class StartupCoordinator
     private readonly DiscoveryService _discovery;
     private readonly IconService _icon;
     private readonly ShortcutService _shortcut;
+    private readonly GroupTransferService _transfer;
     private readonly IDialogService _dialogs;
     private readonly ThemeService _theme;
     private readonly WindowPlacementService _placements;
@@ -22,6 +23,7 @@ public sealed class StartupCoordinator
         DiscoveryService discovery,
         IconService icon,
         ShortcutService shortcut,
+        GroupTransferService transfer,
         IDialogService dialogs,
         ThemeService theme,
         WindowPlacementService placements,
@@ -31,6 +33,7 @@ public sealed class StartupCoordinator
         _discovery = discovery;
         _icon = icon;
         _shortcut = shortcut;
+        _transfer = transfer;
         _dialogs = dialogs;
         _theme = theme;
         _placements = placements;
@@ -50,6 +53,7 @@ public sealed class StartupCoordinator
             _discovery,
             _icon,
             _shortcut,
+            _transfer,
             _dialogs,
             _theme,
             _loggerFactory.CreateLogger<EditorViewModel>());

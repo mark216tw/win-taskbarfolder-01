@@ -19,18 +19,21 @@ public partial class EditorViewModel : ObservableObject
     private readonly DiscoveryService _discovery;
     private readonly IconService _icon;
     private readonly ShortcutService _shortcut;
+    private readonly GroupTransferService _transfer;
     private readonly IDialogService _dialogs;
     private readonly ThemeService _theme;
     private readonly ILogger<EditorViewModel> _logger;
     private readonly DispatcherTimer _statusTimer;
     private AppSettings _settings = new();
     private bool _suppressTheme;
+    private bool _transferring;
 
     public EditorViewModel(
         ConfigService config,
         DiscoveryService discovery,
         IconService icon,
         ShortcutService shortcut,
+        GroupTransferService transfer,
         IDialogService dialogs,
         ThemeService theme,
         ILogger<EditorViewModel> logger)
@@ -39,6 +42,7 @@ public partial class EditorViewModel : ObservableObject
         _discovery = discovery;
         _icon = icon;
         _shortcut = shortcut;
+        _transfer = transfer;
         _dialogs = dialogs;
         _theme = theme;
         _logger = logger;
@@ -430,6 +434,130 @@ public partial class EditorViewModel : ObservableObject
             ShowStatus(Strings.Format("ErrorShortcut", ex.Message), StatusSeverity.Error);
             _dialogs.ShowError(StatusMessage);
         }
+    }
+
+    [RelayCommand]
+    private async Task ExportGroupsAsync()
+    {
+        if (_transferring)
+        {
+            return;
+        }
+
+        var path = _dialogs.PickSaveFile(
+            Strings.Get("ExportGroupsTitle"),
+            Strings.Get("GroupsFileFilter"),
+            $"TaskbarFolders-groups-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        _transferring = true;
+        try
+        {
+            var groups = Groups
+                .Select((group, index) => group.ToModel(index))
+                .ToList();
+
+            await _transfer.ExportAsync(path, groups);
+            _dialogs.ShowMessage(Strings.Format("GroupsExportedMessage", groups.Count, path));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to export groups.");
+            _dialogs.ShowError(Strings.Format("ErrorExportGroups", ex.Message));
+        }
+        finally
+        {
+            _transferring = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ImportGroupsAsync()
+    {
+        if (_transferring)
+        {
+            return;
+        }
+
+        var path = _dialogs.PickFile(
+            Strings.Get("ImportGroupsTitle"),
+            Strings.Get("GroupsFileFilter"));
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        _transferring = true;
+        try
+        {
+            IReadOnlyList<AppGroup> imported;
+            try
+            {
+                imported = await _transfer.ImportAsync(path);
+            }
+            catch (InvalidDataException ex)
+            {
+                _logger.LogWarning(ex, "Rejected invalid group export file {Path}", path);
+                _dialogs.ShowError(Strings.Get("ErrorImportGroupsInvalid"));
+                return;
+            }
+
+            if (!_dialogs.Confirm(Strings.Format("ConfirmImportGroups", imported.Count)))
+            {
+                return;
+            }
+
+            ApplyImportedGroups(imported);
+
+            if (!await SaveCoreAsync())
+            {
+                return;
+            }
+
+            _ = LoadAllIconsAsync();
+            _dialogs.ShowMessage(Strings.Format("GroupsImportedMessage", imported.Count));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to import groups.");
+            _dialogs.ShowError(Strings.Format("ErrorImportGroups", ex.Message));
+        }
+        finally
+        {
+            _transferring = false;
+        }
+    }
+
+    private void ApplyImportedGroups(IReadOnlyList<AppGroup> groups)
+    {
+        foreach (var group in Groups)
+        {
+            DetachGroup(group);
+        }
+
+        Groups.Clear();
+
+        foreach (var model in groups)
+        {
+            var viewModel = new GroupViewModel(model);
+            if (!BuiltInIconCatalog.IsBuiltIn(viewModel.IconPath))
+            {
+                viewModel.IconPath = BuiltInIconCatalog.DefaultIconReference;
+            }
+
+            AttachGroup(viewModel);
+            Groups.Add(viewModel);
+        }
+
+        SelectedGroup = Groups.Count == 0 ? null : Groups[0];
+        HasUnsavedChanges = true;
+        UpdateValidation();
+        SyncBuiltInIconSelection();
     }
 
     private async Task<bool> SaveCoreAsync()

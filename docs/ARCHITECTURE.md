@@ -113,6 +113,7 @@ App.OnStartup
 | `IconService` | 取得應用程式圖示；記憶體與 PNG 磁碟快取；背景清除舊快取 |
 | `LaunchService` | 以 `Process.Start` 啟動檔案／網址；以 `IApplicationActivationManager` 啟動 UWP |
 | `ShortcutService` | 以 `IShellLinkW` 建立 `.lnk`、寫入 AUMID、產生內建圖示 ICO、增量重建與清理 |
+| `GroupTransferService` | 匯出／匯入分類設定 JSON；驗證格式、正規化分類 ID、原子寫入匯出檔 |
 | `TaskbarGeometryService` | 取得工作列與螢幕資訊，計算飛出面板位置與可用高度 |
 | `WindowPlacementService` | 儲存與還原編輯器視窗大小、位置、最大化狀態，並夾回可用範圍 |
 | `ThemeService` | 套用淺色／深色字典；依分類主題覆寫視窗資源 |

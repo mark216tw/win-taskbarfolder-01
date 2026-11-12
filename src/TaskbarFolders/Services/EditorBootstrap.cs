@@ -157,6 +157,7 @@ public sealed class EditorBootstrap : IDisposable
         services.AddSingleton<IconService>();
         services.AddSingleton<LaunchService>();
         services.AddSingleton<ShortcutService>();
+        services.AddSingleton<GroupTransferService>();
         services.AddSingleton<TaskbarGeometryService>();
         services.AddSingleton<ThemeService>();
         services.AddSingleton<WindowPlacementService>();

@@ -342,4 +342,44 @@
   <data name="EditorThemeHint" xml:space="preserve">
     <value>變更顯示模式後，請按「儲存」保留設定。</value>
   </data>
+  <data name="SettingsGroupsSection" xml:space="preserve">
+    <value>分類設定</value>
+  </data>
+  <data name="SettingsGroupsHint" xml:space="preserve">
+    <value>匯出的 JSON 只包含分類與項目資料，不含顯示模式；匯入會覆蓋目前所有分類並立即儲存與更新捷徑。</value>
+  </data>
+  <data name="ExportGroups" xml:space="preserve">
+    <value>匯出分類設定</value>
+  </data>
+  <data name="ImportGroups" xml:space="preserve">
+    <value>匯入分類設定</value>
+  </data>
+  <data name="GroupsFileFilter" xml:space="preserve">
+    <value>TaskbarFolders 分類設定 (*.json)|*.json|所有檔案 (*.*)|*.*</value>
+  </data>
+  <data name="ExportGroupsTitle" xml:space="preserve">
+    <value>匯出分類設定</value>
+  </data>
+  <data name="ImportGroupsTitle" xml:space="preserve">
+    <value>匯入分類設定</value>
+  </data>
+  <data name="ConfirmImportGroups" xml:space="preserve">
+    <value>匯入會覆蓋目前所有分類（共 {0} 個），並立即儲存與更新捷徑。確定要繼續嗎？</value>
+  </data>
+  <data name="GroupsExportedMessage" xml:space="preserve">
+    <value>已匯出 {0} 個分類至：
+{1}</value>
+  </data>
+  <data name="GroupsImportedMessage" xml:space="preserve">
+    <value>已匯入 {0} 個分類。</value>
+  </data>
+  <data name="ErrorExportGroups" xml:space="preserve">
+    <value>無法匯出分類設定：{0}</value>
+  </data>
+  <data name="ErrorImportGroups" xml:space="preserve">
+    <value>無法匯入分類設定：{0}</value>
+  </data>
+  <data name="ErrorImportGroupsInvalid" xml:space="preserve">
+    <value>檔案格式不正確或沒有分類資料。</value>
+  </data>
 </root>
