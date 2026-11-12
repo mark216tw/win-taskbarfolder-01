@@ -1,0 +1,115 @@
+<Window x:Class="Mark.TaskbarFolders.Views.FlyoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="clr-namespace:Mark.TaskbarFolders.Resources"
+        Title="{res:Loc AppTitle}"
+        Width="500"
+        Height="360"
+        WindowStyle="None"
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Topmost="True"
+        WindowStartupLocation="Manual"
+        Deactivated="OnDeactivated"
+        PreviewKeyDown="OnPreviewKeyDown">
+    <Border x:Name="RootBorder"
+            CornerRadius="8"
+            Background="{DynamicResource SurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            Padding="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="2,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="{Binding GroupName}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           TextWrapping="NoWrap" />
+
+                <Button Grid.Column="1"
+                        Content="✕"
+                        Click="OnCloseClick"
+                        Width="28"
+                        Height="28"
+                        Padding="0"
+                        FontSize="14"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Margin="8,0,0,0"
+                        ToolTip="{res:Loc Close}"
+                        AutomationProperties.Name="{res:Loc Close}" />
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <ListBox x:Name="ItemList"
+                         ItemsSource="{Binding Items}"
+                         PreviewMouseLeftButtonUp="OnListMouseUp"
+                         ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         AutomationProperties.Name="{Binding GroupName}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem"
+                               BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="Padding" Value="2" />
+                            <Setter Property="Margin" Value="0,1" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Width="88" Margin="0" ToolTip="{Binding ToolTip}">
+                                <Image Source="{Binding IconSource}"
+                                       Width="40"
+                                       Height="40"
+                                       Stretch="Uniform"
+                                       HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}"
+                                           TextAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextWrapping="Wrap"
+                                           MaxHeight="34"
+                                           Margin="0,6,0,0"
+                                           FontSize="12" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock Text="{res:Loc NoItems}"
+                           Foreground="{DynamicResource SubtleTextBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasItems}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

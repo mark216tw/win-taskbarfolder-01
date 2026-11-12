@@ -1,0 +1,58 @@
+<Window x:Class="Mark.TaskbarFolders.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="clr-namespace:Mark.TaskbarFolders.Resources"
+        Title="{res:Loc SettingsTitle}"
+        Width="460"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        Icon="pack://application:,,,/TaskbarFolders;component/Resources/app.ico">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="{res:Loc SettingsTitle}"
+                   Style="{StaticResource HeadingTextStyle}"
+                   Margin="0,0,0,12" />
+
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorderStyle}"
+                Padding="16">
+            <StackPanel>
+                <TextBlock Text="{res:Loc Theme}"
+                           Style="{StaticResource SubtleTextStyle}"
+                           Margin="0,0,0,6" />
+                <ComboBox SelectedValue="{Binding ThemeMode, Mode=TwoWay}"
+                          SelectedValuePath="Tag">
+                    <ComboBoxItem Content="{res:Loc ThemeSystem}" Tag="System" Foreground="{DynamicResource TextBrush}" />
+                    <ComboBoxItem Content="{res:Loc ThemeLight}" Tag="Light" Foreground="{DynamicResource TextBrush}" />
+                    <ComboBoxItem Content="{res:Loc ThemeDark}" Tag="Dark" Foreground="{DynamicResource TextBrush}" />
+                </ComboBox>
+                <TextBlock Text="{res:Loc EditorThemeHint}"
+                           Style="{StaticResource SubtleTextStyle}"
+                           Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <Button Content="{res:Loc Close}"
+                    Click="OnClose"
+                    IsCancel="True"
+                    Margin="0,0,8,0" />
+            <Button Content="{res:Loc Save}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Click="OnSave"
+                    IsDefault="True" />
+        </StackPanel>
+    </Grid>
+</Window>

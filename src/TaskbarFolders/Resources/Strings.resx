@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTitle" xml:space="preserve">
+    <value>TaskbarFolders</value>
+  </data>
+  <data name="EditorTitle" xml:space="preserve">
+    <value>TaskbarFolders 設定</value>
+  </data>
+  <data name="EditorHeading" xml:space="preserve">
+    <value>工作列分類</value>
+  </data>
+  <data name="EditorSubtitle" xml:space="preserve">
+    <value>建立分類、整理應用程式，並產生可釘選到工作列的捷徑。</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>儲存</value>
+  </data>
+  <data name="AddGroup" xml:space="preserve">
+    <value>新增分類</value>
+  </data>
+  <data name="DeleteGroup" xml:space="preserve">
+    <value>刪除分類</value>
+  </data>
+  <data name="DragToReorderHint" xml:space="preserve">
+    <value>拖曳可調整分類順序</value>
+  </data>
+  <data name="MoveUp" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="MoveDown" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="AddFile" xml:space="preserve">
+    <value>加入檔案</value>
+  </data>
+  <data name="AddFileFilter" xml:space="preserve">
+    <value>應用程式與捷徑|*.exe;*.lnk;*.url;*.bat;*.cmd;*.appref-ms|所有檔案|*.*</value>
+  </data>
+  <data name="AddUrl" xml:space="preserve">
+    <value>加入網址</value>
+  </data>
+  <data name="ImportStartMenu" xml:space="preserve">
+    <value>從開始功能表匯入</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>重新命名</value>
+  </data>
+  <data name="GenerateShortcut" xml:space="preserve">
+    <value>產生釘選捷徑</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>開啟資料夾</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>關閉</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>確定</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>分類</value>
+  </data>
+  <data name="GroupName" xml:space="preserve">
+    <value>分類名稱</value>
+  </data>
+  <data name="BuiltInIcon" xml:space="preserve">
+    <value>分類圖示</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="IconFolder" xml:space="preserve">
+    <value>資料夾</value>
+  </data>
+  <data name="IconMail" xml:space="preserve">
+    <value>郵件</value>
+  </data>
+  <data name="IconCalendar" xml:space="preserve">
+    <value>行事曆</value>
+  </data>
+  <data name="IconNotes" xml:space="preserve">
+    <value>記事</value>
+  </data>
+  <data name="IconFiles" xml:space="preserve">
+    <value>檔案</value>
+  </data>
+  <data name="IconBrowser" xml:space="preserve">
+    <value>瀏覽器</value>
+  </data>
+  <data name="IconTerminal" xml:space="preserve">
+    <value>終端機</value>
+  </data>
+  <data name="IconSettings" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="IconMusic" xml:space="preserve">
+    <value>音樂</value>
+  </data>
+  <data name="IconGames" xml:space="preserve">
+    <value>遊戲</value>
+  </data>
+  <data name="IconStar" xml:space="preserve">
+    <value>星號</value>
+  </data>
+  <data name="IconHome" xml:space="preserve">
+    <value>首頁</value>
+  </data>
+  <data name="IconWork" xml:space="preserve">
+    <value>工作</value>
+  </data>
+  <data name="IconCode" xml:space="preserve">
+    <value>程式碼</value>
+  </data>
+  <data name="IconChat" xml:space="preserve">
+    <value>聊天</value>
+  </data>
+  <data name="IconPhoto" xml:space="preserve">
+    <value>相片</value>
+  </data>
+  <data name="IconVideo" xml:space="preserve">
+    <value>影片</value>
+  </data>
+  <data name="IconBook" xml:space="preserve">
+    <value>書本</value>
+  </data>
+  <data name="IconSearch" xml:space="preserve">
+    <value>搜尋</value>
+  </data>
+  <data name="IconDownload" xml:space="preserve">
+    <value>下載</value>
+  </data>
+  <data name="ThemeColor" xml:space="preserve">
+    <value>分類主題</value>
+  </data>
+  <data name="ThemeColorNone" xml:space="preserve">
+    <value>無</value>
+  </data>
+  <data name="ThemeColorYellow" xml:space="preserve">
+    <value>黃色護眼</value>
+  </data>
+  <data name="ThemeColorBlue" xml:space="preserve">
+    <value>海洋藍</value>
+  </data>
+  <data name="ThemeColorGreen" xml:space="preserve">
+    <value>森林綠</value>
+  </data>
+  <data name="ThemeColorPurple" xml:space="preserve">
+    <value>薰衣草紫</value>
+  </data>
+  <data name="ThemeColorOrange" xml:space="preserve">
+    <value>暖陽橙</value>
+  </data>
+  <data name="GroupItems" xml:space="preserve">
+    <value>應用程式</value>
+  </data>
+  <data name="DefaultGroupName" xml:space="preserve">
+    <value>常用</value>
+  </data>
+  <data name="NewGroupName" xml:space="preserve">
+    <value>新分類</value>
+  </data>
+  <data name="NoGroups" xml:space="preserve">
+    <value>尚未建立分類</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>這個分類還沒有應用程式</value>
+  </data>
+  <data name="SearchAppsPlaceholder" xml:space="preserve">
+    <value>搜尋開始功能表應用程式…</value>
+  </data>
+  <data name="StatusReady" xml:space="preserve">
+    <value>就緒</value>
+  </data>
+  <data name="StatusSaved" xml:space="preserve">
+    <value>設定已儲存，捷徑已更新。</value>
+  </data>
+  <data name="StatusScanning" xml:space="preserve">
+    <value>正在掃描開始功能表與 Store 應用程式…</value>
+  </data>
+  <data name="StatusImported" xml:space="preserve">
+    <value>已加入 {0} 個應用程式。</value>
+  </data>
+  <data name="StatusShortcutCreated" xml:space="preserve">
+    <value>捷徑已建立：{0}</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>確認</value>
+  </data>
+  <data name="ConfirmDeleteGroup" xml:space="preserve">
+    <value>確定要刪除分類「{0}」嗎？分類內的應用程式不會被刪除。</value>
+  </data>
+  <data name="ConfirmDiscardTitle" xml:space="preserve">
+    <value>尚未儲存</value>
+  </data>
+  <data name="ConfirmDiscardChanges" xml:space="preserve">
+    <value>有尚未儲存的變更，確定要關閉嗎？</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>發生錯誤</value>
+  </data>
+  <data name="ErrorLoad" xml:space="preserve">
+    <value>無法載入設定：{0}</value>
+  </data>
+  <data name="ErrorSave" xml:space="preserve">
+    <value>無法儲存設定：{0}</value>
+  </data>
+  <data name="ErrorLaunch" xml:space="preserve">
+    <value>無法啟動「{0}」：{1}</value>
+  </data>
+  <data name="ErrorImport" xml:space="preserve">
+    <value>無法匯入應用程式：{0}</value>
+  </data>
+  <data name="ErrorShortcut" xml:space="preserve">
+    <value>無法建立捷徑：{0}</value>
+  </data>
+  <data name="ErrorGroupMissing" xml:space="preserve">
+    <value>找不到分類「{0}」，已開啟設定。</value>
+  </data>
+  <data name="PinGuideTitle" xml:space="preserve">
+    <value>釘選分類到工作列</value>
+  </data>
+  <data name="PinGuideHeading" xml:space="preserve">
+    <value>將「{0}」釘選到工作列</value>
+  </data>
+  <data name="PinGuideInstructions" xml:space="preserve">
+    <value>Windows 11 不允許程式自動把項目釘到工作列，請依下列步驟操作：
+
+1. 按「開啟資料夾」。
+2. 在檔案總管中對捷徑按右鍵。
+3. 選擇「顯示更多選項」→「釘選到工作列」。
+4. 回到工作列，點擊剛釘選的分類圖示即可向上展開。</value>
+  </data>
+  <data name="PickAppsTitle" xml:space="preserve">
+    <value>從開始功能表加入應用程式</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>全選</value>
+  </data>
+  <data name="ClearSelection" xml:space="preserve">
+    <value>清除選取</value>
+  </data>
+  <data name="AppPickerHint" xml:space="preserve">
+    <value>可按住 Ctrl 或 Shift 多選。</value>
+  </data>
+  <data name="UrlPromptTitle" xml:space="preserve">
+    <value>加入網址</value>
+  </data>
+  <data name="UrlPromptLabel" xml:space="preserve">
+    <value>請輸入網址（例如 https://example.com）</value>
+  </data>
+  <data name="RenamePromptTitle" xml:space="preserve">
+    <value>重新命名</value>
+  </data>
+  <data name="RenamePromptLabel" xml:space="preserve">
+    <value>請輸入新的名稱</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>顯示模式</value>
+  </data>
+  <data name="ThemeSystem" xml:space="preserve">
+    <value>跟隨系統</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>淺色</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>深色</value>
+  </data>
+  <data name="EmptyGroupHint" xml:space="preserve">
+    <value>使用下方按鈕加入應用程式，或從開始功能表匯入。</value>
+  </data>
+  <data name="ShortcutPath" xml:space="preserve">
+    <value>捷徑位置</value>
+  </data>
+  <data name="PinAutoHint" xml:space="preserve">
+    <value>提示：若 Windows 更新後圖示消失，請重新產生捷徑並再次釘選。</value>
+  </data>
+  <data name="EditorThemeHint" xml:space="preserve">
+    <value>變更顯示模式後，請按「儲存」保留設定。</value>
+  </data>
+</root>

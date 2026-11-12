@@ -1,0 +1,30 @@
+<Window x:Class="Mark.TaskbarFolders.Views.InputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="clr-namespace:Mark.TaskbarFolders.Resources"
+        Title="{res:Loc Ok}"
+        Width="480"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        Icon="pack://application:,,,/TaskbarFolders;component/Resources/app.ico">
+    <StackPanel Margin="20">
+        <TextBlock x:Name="LabelText"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,8" />
+        <TextBox x:Name="ValueBox" />
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <Button Content="{res:Loc Cancel}"
+                    Click="OnCancel"
+                    Margin="0,0,8,0" />
+            <Button Content="{res:Loc Ok}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Click="OnOk"
+                    IsDefault="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>
