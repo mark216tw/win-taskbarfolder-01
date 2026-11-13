@@ -98,6 +98,9 @@ public partial class EditorViewModel : ObservableObject
     private bool hasUnsavedChanges;
 
     [ObservableProperty]
+    private bool hasUnsavedSettingsChanges;
+
+    [ObservableProperty]
     private bool hasMissingIcons;
 
     [ObservableProperty]
@@ -108,8 +111,9 @@ public partial class EditorViewModel : ObservableObject
         _settings = settings;
 
         _suppressTheme = true;
-        ThemeMode = string.IsNullOrWhiteSpace(settings.Theme) ? "System" : settings.Theme;
+        ThemeMode = NormalizeTheme(settings.Theme);
         _suppressTheme = false;
+        settings.Theme = ThemeMode;
         _theme.Apply(ThemeMode);
 
         var requiresSave = false;
@@ -151,8 +155,26 @@ public partial class EditorViewModel : ObservableObject
         if (!_suppressTheme)
         {
             _theme.Apply(value);
-            HasUnsavedChanges = true;
+            HasUnsavedSettingsChanges = !string.Equals(
+                NormalizeTheme(value),
+                NormalizeTheme(_settings.Theme),
+                StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    public void RevertThemeChanges()
+    {
+        if (!HasUnsavedSettingsChanges)
+        {
+            return;
+        }
+
+        var persisted = NormalizeTheme(_settings.Theme);
+        _suppressTheme = true;
+        ThemeMode = persisted;
+        _suppressTheme = false;
+        _theme.Apply(persisted);
+        HasUnsavedSettingsChanges = false;
     }
 
     partial void OnHasUnsavedChangesChanged(bool value) =>
@@ -401,6 +423,32 @@ public partial class EditorViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task SaveSettingsAsync()
+    {
+        try
+        {
+            var settings = new AppSettings
+            {
+                Version = _settings.Version,
+                Theme = NormalizeTheme(ThemeMode),
+                Groups = _settings.Groups
+            };
+
+            await _config.SaveAsync(settings);
+
+            _settings = settings;
+            HasUnsavedSettingsChanges = false;
+            ShowStatus(Strings.Get("SettingsSaved"), StatusSeverity.Success);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save settings.");
+            ShowStatus(Strings.Format("ErrorSave", ex.Message), StatusSeverity.Error);
+            _dialogs.ShowError(StatusMessage);
+        }
+    }
+
+    [RelayCommand]
     private async Task GenerateShortcutAsync()
     {
         if (SelectedGroup is null)
@@ -573,7 +621,7 @@ public partial class EditorViewModel : ObservableObject
             var settings = new AppSettings
             {
                 Version = _settings.Version,
-                Theme = ThemeMode,
+                Theme = NormalizeTheme(_settings.Theme),
                 Groups = groups
             };
 
@@ -773,6 +821,9 @@ public partial class EditorViewModel : ObservableObject
         _statusTimer.Stop();
         IsStatusVisible = false;
     }
+
+    private static string NormalizeTheme(string? theme) =>
+        string.IsNullOrWhiteSpace(theme) ? "System" : theme;
 
     private static string BuildKey(AppItemKind kind, string target, string? arguments, string? aumid) =>
         kind == AppItemKind.Uwp && !string.IsNullOrWhiteSpace(aumid)

@@ -1,5 +1,87 @@
 # 開發紀錄
 
+## 2026-11-13 - v1.8.5
+
+### 目標
+
+設定頁沒有調整任何設定時，停用「儲存」按鈕，避免無意義的儲存操作。
+
+### 變更
+
+- `Views/SettingsWindow.xaml`：儲存按鈕的 `IsEnabled` 繫結 `HasUnsavedSettingsChanges`。
+- `ViewModels/EditorViewModel.cs`：顯示模式變更時與上次儲存值比較，相同時不標記為未儲存（改回原值也會停用）。
+- `Directory.Build.props`：版本 1.8.5、`FileVersion` 1.8.5.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`：補充儲存按鈕停用規則。
+
+### 問題與解法
+
+- 原本只要顯示模式變更過就視為未儲存，即使改回原值仍可儲存 → 改為與已儲存值比較，無實際差異時停用按鈕。
+
+### 待辦 / 已知限制
+
+- 無。
+
+## 2026-11-13 - v1.8.4
+
+### 目標
+
+調整設定頁儲存成功後的提示訊息，避免沿用主畫面「捷徑已更新」的字樣造成誤解。
+
+### 變更
+
+- `Resources/Strings.resx`：新增 `SettingsSaved`（「設定已儲存。」）。
+- `ViewModels/EditorViewModel.cs`：設定頁儲存成功改用 `SettingsSaved`；主畫面儲存維持 `StatusSaved`。
+- `Directory.Build.props`：版本 1.8.4、`FileVersion` 1.8.4.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `CHANGELOG.md`、`RELEASE_NOTES.md`：補充提示文字調整。
+
+### 問題與解法
+
+- 設定頁儲存原本共用主畫面 `StatusSaved`，訊息包含「捷徑已更新」，但設定頁儲存不會重建捷徑 → 新增設定頁專用字串。
+
+### 待辦 / 已知限制
+
+- 無。
+
+## 2026-11-13 - v1.8.3
+
+### 目標
+
+將設定頁與主畫面的儲存分開處理，避免兩邊互相覆蓋或讓未儲存的顯示模式影響主畫面的儲存狀態。
+
+### 變更
+
+- `ViewModels/EditorViewModel.cs`：新增 `HasUnsavedSettingsChanges` 與 `SaveSettingsCommand`；顯示模式變更只標記設定頁未儲存；新增 `RevertThemeChanges`；主畫面儲存改用上次儲存的顯示模式，不再寫入目前 `ThemeMode`。
+- `Views/SettingsWindow.xaml.cs`：儲存改用 `SaveSettingsCommand`；關閉設定視窗時還原未儲存的顯示模式變更；成功儲存才關閉。
+- `Directory.Build.props`：版本 1.8.3、`FileVersion` 1.8.3.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`：補充儲存分工與未儲存還原說明。
+
+### 問題與解法
+
+- 原本設定頁直接呼叫主畫面 `SaveCommand`，會一併儲存分類、同步捷徑並清除主畫面未儲存狀態 → 改為獨立設定儲存命令，只寫入顯示模式並保留上次已儲存的分類快照。
+- 顯示模式變更原本會標記 `HasUnsavedChanges`，導致主畫面誤判有分類變更 → 拆分為獨立的 `HasUnsavedSettingsChanges`。
+
+### 待辦 / 已知限制
+
+- 尚未實測儲存失敗後再次儲存的完整流程。
+
+## 2026-11-13 - v1.8.2
+
+### 目標
+
+修正深色模式下「分類主題」與設定頁「顯示模式」下拉選單文字看不清楚的問題。
+
+### 變更
+
+- `Resources/Styles.xaml`：以主題筆刷自訂 `ComboBox` 與 `ComboBoxItem` 樣式；下拉箭頭、選中項目、滑鼠移入、選項清單彈出視窗背景與文字皆改用 `DynamicResource`。
+
+### 問題與解法
+
+- WPF 預設 `ComboBox` 樣式的彈出清單使用系統視窗背景（淺色），且控制項未套用主題背景，導致深色模式下淺色文字落在淺色底上而看不清楚 → 自訂完整控制項範本，統一使用 `SurfaceBrush`、`SurfaceAltBrush`、`TextBrush` 等主題資源。
+
+### 待辦 / 已知限制
+
+- 尚未實測高對比模式下的下拉選單顯示。
+
 ## 2026-11-12 - v1.8.1
 
 ### 目標

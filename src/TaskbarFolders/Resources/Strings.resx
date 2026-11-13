@@ -238,6 +238,9 @@
   <data name="StatusSaved" xml:space="preserve">
     <value>設定已儲存，捷徑已更新。</value>
   </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>設定已儲存。</value>
+  </data>
   <data name="StatusScanning" xml:space="preserve">
     <value>正在掃描開始功能表與 Store 應用程式…</value>
   </data>

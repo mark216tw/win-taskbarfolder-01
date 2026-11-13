@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using Mark.TaskbarFolders.Helpers;
 using Mark.TaskbarFolders.Services;
@@ -16,6 +17,7 @@ public partial class SettingsWindow : Window
         _viewModel = viewModel;
         DataContext = viewModel;
         SourceInitialized += (_, _) => WindowThemeHelper.Apply(this, theme.IsDark);
+        Closing += OnClosing;
     }
 
     private async void OnSave(object sender, RoutedEventArgs e)
@@ -28,17 +30,24 @@ public partial class SettingsWindow : Window
         _saving = true;
         try
         {
-            await _viewModel.SaveCommand.ExecuteAsync(null);
-            if (!_viewModel.HasUnsavedChanges)
+            if (_viewModel.HasUnsavedSettingsChanges)
             {
-                Close();
+                await _viewModel.SaveSettingsCommand.ExecuteAsync(null);
+                if (_viewModel.HasUnsavedSettingsChanges)
+                {
+                    return;
+                }
             }
+
+            Close();
         }
         finally
         {
             _saving = false;
         }
     }
+
+    private void OnClosing(object? sender, CancelEventArgs e) => _viewModel.RevertThemeChanges();
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();
 }
