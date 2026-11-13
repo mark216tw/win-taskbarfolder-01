@@ -385,4 +385,16 @@
   <data name="ErrorImportGroupsInvalid" xml:space="preserve">
     <value>檔案格式不正確或沒有分類資料。</value>
   </data>
+  <data name="EditDisplayName" xml:space="preserve">
+    <value>編輯顯示名稱</value>
+  </data>
+  <data name="EditDisplayNameTitle" xml:space="preserve">
+    <value>編輯顯示名稱</value>
+  </data>
+  <data name="EditDisplayNameLabel" xml:space="preserve">
+    <value>請輸入顯示名稱</value>
+  </data>
+  <data name="ErrorEditDisplayName" xml:space="preserve">
+    <value>無法儲存顯示名稱，請稍後再試。</value>
+  </data>
 </root>

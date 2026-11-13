@@ -61,6 +61,57 @@ public sealed class ConfigServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RenameItemAsync_UpdatesItemName()
+    {
+        var service = new ConfigService(_root);
+        var settings = new AppSettings
+        {
+            Groups =
+            [
+                new AppGroup
+                {
+                    Id = "work",
+                    Name = "工作",
+                    Items =
+                    [
+                        new AppItem
+                        {
+                            Id = "editor",
+                            Name = "記事本",
+                            Target = @"C:\Windows\notepad.exe"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        await service.SaveAsync(settings);
+
+        var renamed = await service.RenameItemAsync("work", "editor", "  文字編輯器  ");
+
+        Assert.True(renamed);
+        var loaded = await service.LoadAsync();
+        var item = Assert.Single(Assert.Single(loaded.Groups).Items);
+        Assert.Equal("文字編輯器", item.Name);
+    }
+
+    [Fact]
+    public async Task RenameItemAsync_ReturnsFalseWhenItemMissing()
+    {
+        var service = new ConfigService(_root);
+        await service.SaveAsync(new AppSettings
+        {
+            Groups = [new AppGroup { Id = "work", Name = "工作" }]
+        });
+
+        Assert.False(await service.RenameItemAsync("work", "missing", "新名稱"));
+        Assert.False(await service.RenameItemAsync("missing", "item", "新名稱"));
+
+        var loaded = await service.LoadAsync();
+        Assert.Empty(Assert.Single(loaded.Groups).Items);
+    }
+
+    [Fact]
     public async Task LoadMissingFile_ReturnsEmptySettings()
     {
         var service = new ConfigService(_root);

@@ -113,14 +113,26 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="1"
+                                   Text="{res:Loc GroupName}"
+                                   Style="{StaticResource SubtleTextStyle}" />
 
                         <Button x:Name="IconPickerButton"
+                                Grid.Row="1"
                                 Grid.Column="0"
                                 Command="{Binding OpenIconPickerCommand}"
                                 Width="40"
                                 Height="40"
                                 Padding="0"
-                                Margin="0,0,12,0"
+                                Margin="0,4,12,0"
                                 VerticalAlignment="Center"
                                 ToolTip="{res:Loc BuiltInIcon}"
                                 AutomationProperties.Name="{res:Loc BuiltInIcon}">
@@ -162,36 +174,41 @@
                             </Border>
                         </Popup>
 
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="{res:Loc GroupName}" Style="{StaticResource SubtleTextStyle}" />
-                            <TextBox Text="{Binding SelectedGroup.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,4,0,0" />
-                            <TextBlock Text="{res:Loc ThemeColor}"
-                                       Style="{StaticResource SubtleTextStyle}"
-                                       Margin="0,12,0,0" />
-                            <ComboBox ItemsSource="{Binding ThemeColorOptions}"
-                                      SelectedValue="{Binding SelectedGroup.ThemeColor, Mode=TwoWay}"
-                                      SelectedValuePath="Id"
-                                      Margin="0,4,0,0"
-                                      AutomationProperties.Name="{res:Loc ThemeColor}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border Width="16"
-                                                    Height="16"
-                                                    CornerRadius="4"
-                                                    BorderThickness="1"
-                                                    BorderBrush="{DynamicResource BorderBrush}"
-                                                    Background="{Binding PreviewBrush}"
-                                                    Margin="0,0,8,0" />
-                                            <TextBlock Text="{Binding Name}"
-                                                       Foreground="{DynamicResource TextBrush}"
-                                                       VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </StackPanel>
+                        <TextBox Grid.Row="1"
+                                 Grid.Column="1"
+                                 Text="{Binding SelectedGroup.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,4,0,0" />
+
+                        <TextBlock Grid.Row="2"
+                                   Grid.Column="1"
+                                   Text="{res:Loc ThemeColor}"
+                                   Style="{StaticResource SubtleTextStyle}"
+                                   Margin="0,12,0,0" />
+
+                        <ComboBox Grid.Row="3"
+                                  Grid.Column="1"
+                                  ItemsSource="{Binding ThemeColorOptions}"
+                                  SelectedValue="{Binding SelectedGroup.ThemeColor, Mode=TwoWay}"
+                                  SelectedValuePath="Id"
+                                  Margin="0,4,0,0"
+                                  AutomationProperties.Name="{res:Loc ThemeColor}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="16"
+                                                Height="16"
+                                                CornerRadius="4"
+                                                BorderThickness="1"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                Background="{Binding PreviewBrush}"
+                                                Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding Name}"
+                                                   Foreground="{DynamicResource TextBrush}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </Grid>
 
                     <Grid Grid.Row="2" Margin="0,4,0,8">

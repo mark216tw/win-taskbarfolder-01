@@ -1,5 +1,35 @@
 # 開發紀錄
 
+## 2026-11-13 - v1.8.6
+
+### 目標
+
+讓飛出面板可直接編輯應用程式顯示名稱，並修正編輯器分類圖示按鈕未對齊名稱輸入框的問題。
+
+### 變更
+
+- `Views/EditorWindow.xaml`：名稱標籤、圖示按鈕／名稱輸入框、分類主題改為分列配置；圖示按鈕維持左側但與名稱輸入框垂直置中。
+- `Services/ConfigService.cs`：新增 `RenameItemAsync`，在單一鎖內載入、修改指定項目名稱並儲存；抽出 `SaveCoreAsync` 共用寫檔與 `.bak` 備份。
+- `ViewModels/FlyoutViewModel.cs`：注入 `ConfigService` 與分類 ID，新增 `RenameItemAsync` 更新畫面名稱並持久化。
+- `Services/FlyoutLauncher.cs`：建立飛出面板 ViewModel 時傳入設定服務。
+- `Views/FlyoutWindow.xaml`、`FlyoutWindow.xaml.cs`：項目右鍵選單「編輯顯示名稱」，以既有 `InputDialog` 修改；選單與對話框期間暫停失焦關閉，失敗時顯示錯誤。
+- `Resources/Strings.resx`：新增編輯顯示名稱相關字串。
+- `Resources/Styles.xaml`：新增 `ContextMenu`、`MenuItem` 主題樣式，支援淺色與深色模式。
+- `tests/TaskbarFolders.Tests/ConfigServiceTests.cs`：新增改名持久化與找不到項目時回傳 `false` 的測試。
+- `Directory.Build.props`：版本 1.8.6、`FileVersion` 1.8.6.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`：補充功能與操作說明。
+
+### 問題與解法
+
+- 飛出面板在開啟右鍵選單或對話框時會因失焦自動關閉 → 開啟選單與對話框期間暫停失焦關閉，關閉後再恢復焦點。
+- 右鍵選單的 `DataContext` 不一定能直接由 `MenuItem` 取得 → 改由 `ContextMenu.PlacementTarget` 取得被右鍵的項目。
+- 直接寫入飛出面板啟動時載入的舊設定，可能蓋掉期間其他程序已儲存的變更 → 改名時重新載入最新設定再修改單一項目名稱。
+
+### 待辦 / 已知限制
+
+- 主編輯器若同時開著且有未儲存變更，之後在主編輯器儲存仍可能覆蓋飛出面板的改名；目前以文件說明，尚未加入跨程序即時同步。
+- 尚未實測高 DPI 與 Windows 10 上的右鍵選單樣式。
+
 ## 2026-11-13 - v1.8.5
 
 ### 目標

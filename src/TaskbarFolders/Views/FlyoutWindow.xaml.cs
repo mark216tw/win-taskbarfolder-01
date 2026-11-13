@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Mark.TaskbarFolders.Helpers;
+using Mark.TaskbarFolders.Resources;
 using Mark.TaskbarFolders.ViewModels;
 using Mark.TaskbarFolders.Services;
 
@@ -20,6 +21,7 @@ public partial class FlyoutWindow : Window
     private readonly TaskbarGeometryService _geometry;
     private bool _positioned;
     private bool _suppressDeactivate;
+    private bool _renameInProgress;
     private long _shownAt;
 
     public FlyoutWindow(FlyoutViewModel viewModel, TaskbarGeometryService geometry)
@@ -118,6 +120,83 @@ public partial class FlyoutWindow : Window
     }
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
+
+    private void OnItemContextMenuOpened(object sender, RoutedEventArgs e) =>
+        _suppressDeactivate = true;
+
+    private void OnItemContextMenuClosed(object sender, RoutedEventArgs e)
+    {
+        if (_renameInProgress)
+        {
+            return;
+        }
+
+        _suppressDeactivate = false;
+
+        if (!IsActive)
+        {
+            Close();
+        }
+    }
+
+    private async void OnRenameItemClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem menuItem)
+        {
+            return;
+        }
+
+        var contextMenu = menuItem.Parent as ContextMenu;
+        var item = (contextMenu?.PlacementTarget as FrameworkElement)?.DataContext as ItemViewModel
+            ?? menuItem.DataContext as ItemViewModel;
+
+        if (item is null)
+        {
+            return;
+        }
+
+        _renameInProgress = true;
+        _suppressDeactivate = true;
+
+        try
+        {
+            var dialog = new InputDialog(
+                Strings.Get("EditDisplayNameTitle"),
+                Strings.Get("EditDisplayNameLabel"),
+                item.Name)
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var name = dialog.Value.Trim();
+            if (name.Length == 0 || string.Equals(name, item.Name, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!await _viewModel.RenameItemAsync(item, name))
+            {
+                MessageBox.Show(
+                    this,
+                    Strings.Get("ErrorEditDisplayName"),
+                    Strings.Get("ErrorTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            _renameInProgress = false;
+            _suppressDeactivate = false;
+            Activate();
+            ItemList.Focus();
+        }
+    }
 
     private void OnDeactivated(object? sender, EventArgs e)
     {

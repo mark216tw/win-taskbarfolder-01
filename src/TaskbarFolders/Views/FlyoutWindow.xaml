@@ -76,7 +76,18 @@
                     </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Width="88" Margin="0" ToolTip="{Binding ToolTip}">
+                            <StackPanel Width="88"
+                                        Margin="0"
+                                        ToolTip="{Binding ToolTip}"
+                                        ContextMenuOpening="OnItemContextMenuOpened">
+                                <StackPanel.ContextMenu>
+                                    <ContextMenu Opened="OnItemContextMenuOpened"
+                                                 Closed="OnItemContextMenuClosed">
+                                        <MenuItem Header="{res:Loc EditDisplayName}"
+                                                  Click="OnRenameItemClick"
+                                                  AutomationProperties.Name="{res:Loc EditDisplayName}" />
+                                    </ContextMenu>
+                                </StackPanel.ContextMenu>
                                 <Image Source="{Binding IconSource}"
                                        Width="40"
                                        Height="40"

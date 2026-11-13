@@ -44,31 +44,76 @@ public sealed class ConfigService
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            Directory.CreateDirectory(RootDirectory);
-
-            if (File.Exists(_configFile))
-            {
-                var backup = _configFile + ".bak";
-                File.Copy(_configFile, backup, overwrite: true);
-            }
-
-            var temporary = _configFile + ".tmp";
-            await using (var stream = File.Create(temporary))
-            {
-                await JsonSerializer.SerializeAsync(
-                        stream,
-                        settings,
-                        AppSettingsJsonContext.Default.AppSettings,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            File.Move(temporary, _configFile, overwrite: true);
+            await SaveCoreAsync(settings, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
             _gate.Release();
         }
+    }
+
+    public async Task<bool> RenameItemAsync(
+        string groupId,
+        string itemId,
+        string newName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(groupId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(newName);
+
+        var trimmed = newName.Trim();
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var settings = await LoadCoreAsync(cancellationToken).ConfigureAwait(false);
+            var group = settings.Groups.FirstOrDefault(
+                candidate => candidate.Id.Equals(groupId, StringComparison.OrdinalIgnoreCase));
+            var item = group?.Items.FirstOrDefault(
+                candidate => candidate.Id.Equals(itemId, StringComparison.OrdinalIgnoreCase));
+
+            if (item is null)
+            {
+                return false;
+            }
+
+            item.Name = trimmed;
+            await SaveCoreAsync(settings, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task SaveCoreAsync(AppSettings settings, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(RootDirectory);
+
+        if (File.Exists(_configFile))
+        {
+            var backup = _configFile + ".bak";
+            File.Copy(_configFile, backup, overwrite: true);
+        }
+
+        var temporary = _configFile + ".tmp";
+        await using (var stream = File.Create(temporary))
+        {
+            await JsonSerializer.SerializeAsync(
+                    stream,
+                    settings,
+                    AppSettingsJsonContext.Default.AppSettings,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        File.Move(temporary, _configFile, overwrite: true);
     }
 
     private async Task<AppSettings> LoadCoreAsync(CancellationToken cancellationToken)

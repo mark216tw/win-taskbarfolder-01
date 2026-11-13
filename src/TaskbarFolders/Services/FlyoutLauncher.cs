@@ -49,6 +49,7 @@ public sealed class FlyoutLauncher : IDisposable
 
         var viewModel = new FlyoutViewModel(
             group,
+            _config,
             _launch,
             _icon,
             _loggerFactory.CreateLogger<FlyoutViewModel>());
