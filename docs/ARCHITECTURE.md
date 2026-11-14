@@ -72,11 +72,12 @@ App.OnStartup
        └─ 若為第一個：啟動背景執行緒等待 Activate 事件
   └─ EditorBootstrap.StartAsync()
        ├─ 建立 ServiceProvider
-       └─ StartupCoordinator.StartEditorAsync()
-            ├─ ConfigService.LoadAsync()
-            ├─ EditorViewModel.InitializeAsync()
-            ├─ 建立並顯示 EditorWindow
-            └─ 背景載入全部圖示
+       ├─ StartupCoordinator.StartEditorAsync()
+       │    ├─ ConfigService.LoadAsync()
+       │    ├─ EditorViewModel.InitializeAsync()
+       │    ├─ 建立並顯示 EditorWindow
+       │    └─ 背景載入全部圖示
+       └─ 啟動 FlyoutIpcServer（具名管道 Mark.TaskbarFolders.Flyout）
   └─ 背景執行 IconService.PruneDefaultCache()
 ```
 
@@ -89,19 +90,38 @@ App.OnStartup
 
 ### 4.3 飛出面板模式
 
+入口由 `Program.Main` 先行判斷，避免每次都完整初始化 WPF：
+
 ```
-App.OnStartup
-  └─ FlyoutLauncher.ShowAsync(groupId)
-       ├─ ConfigService.LoadAsync()
-       ├─ 依 id 尋找 AppGroup（找不到顯示錯誤）
-       ├─ ThemeService.Apply(settings.Theme)
-       ├─ 建立 FlyoutViewModel 與 FlyoutWindow
-       ├─ 套用分類主題色盤
-       ├─ 顯示前即開始非同步載入圖示
-       └─ Show()
+Program.Main(argv)
+  └─ CommandLineParser.ParseGroupId(argv)
+       ├─ 無 --group：建立 App → app.Run()（編輯器模式）
+       └─ 有 --group：
+            ├─ FlyoutIpc.IsEditorRunning()（檢查 Local\TaskbarFolders.Editor Mutex）
+            │    └─ 是：FlyoutIpc.TrySend(groupId) → 成功則結束（由編輯器代開）
+            ├─ FlyoutInstanceGuard.TryAcquire(groupId)
+            │    └─ 失敗：代表已有飛出面板程序，直接結束
+            ├─ 建立 App → app.Run()
+            └─ App.OnStartup → FlyoutLauncher.Show(groupId)
+                 ├─ ConfigService.Load()（同步）
+                 ├─ 依 id 尋找 AppGroup（找不到顯示錯誤）
+                 ├─ 同分類短時間內重複請求只 Activate，不新增視窗
+                 ├─ ThemeService.Apply(settings.Theme)
+                 ├─ 建立 FlyoutViewModel 與 FlyoutWindow
+                 ├─ 套用分類主題色盤
+                 ├─ Show()
+                 └─ 背景載入圖示
 ```
 
-飛出面板模式不建立 `Microsoft.Extensions.Hosting` 主機，也不載入編輯器相關服務，以縮短冷啟動時間。程序結束時由 `App.OnExit` 釋放 `StaExecutor` 與記錄器。
+編輯器模式會在 `EditorWindow` 顯示後啟動 `FlyoutIpcServer`（具名管道 `Mark.TaskbarFolders.Flyout`）。捷徑觸發的輕量程序只送出 group id 並等待 `OK`，由編輯器以已預熱的服務即時建立飛出面板，不需要重新建立程序。
+
+去重機制：
+
+- `Mutex`：`Local\TaskbarFolders.Flyout.<group hash>`（冷啟動程序唯一）
+- `NamedPipeServerStream`：`Mark.TaskbarFolders.Flyout`（`PipeOptions.CurrentUserOnly`）
+- 快速連點同一捷徑時，500ms 內的第二次請求只會啟用既有視窗，不會產生第二個。
+
+飛出面板模式不建立 `Microsoft.Extensions.Hosting` 主機，也不載入編輯器相關服務，以縮短冷啟動時間。程序結束時由 `App.OnExit` 釋放 `StaExecutor`、記錄器與實例 Mutex。
 
 ## 5. 服務職責
 

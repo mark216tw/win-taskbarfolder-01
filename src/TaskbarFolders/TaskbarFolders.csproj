@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>TaskbarFolders</AssemblyName>
     <RootNamespace>Mark.TaskbarFolders</RootNamespace>
+    <StartupObject>Mark.TaskbarFolders.Program</StartupObject>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
   </PropertyGroup>

@@ -8,23 +8,21 @@ namespace Mark.TaskbarFolders.Services;
 
 public sealed class EditorBootstrap : IDisposable
 {
-    private const string EditorMutexName = @"Local\TaskbarFolders.Editor";
-    private const string EditorActivateEventName = @"Local\TaskbarFolders.Editor.Activate";
-
     private ServiceProvider? _services;
     private Mutex? _editorMutex;
     private EventWaitHandle? _editorActivateEvent;
     private Thread? _activationThread;
+    private FlyoutIpcServer? _flyoutServer;
 
     public bool EnsureSingleInstance()
     {
         try
         {
-            _editorMutex = new Mutex(initiallyOwned: true, EditorMutexName, out var createdNew);
+            _editorMutex = new Mutex(initiallyOwned: true, InstanceNames.EditorMutex, out var createdNew);
             _editorActivateEvent = new EventWaitHandle(
                 initialState: false,
                 EventResetMode.AutoReset,
-                EditorActivateEventName);
+                InstanceNames.EditorActivateEvent);
 
             if (createdNew)
             {
@@ -57,10 +55,40 @@ public sealed class EditorBootstrap : IDisposable
 
         var coordinator = _services.GetRequiredService<StartupCoordinator>();
         await coordinator.StartEditorAsync();
+
+        StartFlyoutServer();
+    }
+
+    private void StartFlyoutServer()
+    {
+        if (_services is null)
+        {
+            return;
+        }
+
+        var launcher = _services.GetRequiredService<FlyoutLauncher>();
+        _flyoutServer = new FlyoutIpcServer(
+            groupId => HandleFlyoutRequestAsync(launcher, groupId),
+            _services.GetRequiredService<ILogger<FlyoutIpcServer>>());
+        _flyoutServer.Start();
+    }
+
+    private static Task HandleFlyoutRequestAsync(FlyoutLauncher launcher, string groupId)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(() => launcher.Show(groupId, showErrorDialog: false, applyTheme: false)).Task;
     }
 
     public void Dispose()
     {
+        _flyoutServer?.Dispose();
+        _flyoutServer = null;
+
         if (_services is not null)
         {
             _services.Dispose();
@@ -163,6 +191,13 @@ public sealed class EditorBootstrap : IDisposable
         services.AddSingleton<WindowPlacementService>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<StartupCoordinator>();
+        services.AddSingleton(sp => FlyoutLauncher.CreateForHost(
+            sp.GetRequiredService<ConfigService>(),
+            sp.GetRequiredService<IconService>(),
+            sp.GetRequiredService<LaunchService>(),
+            sp.GetRequiredService<ThemeService>(),
+            sp.GetRequiredService<TaskbarGeometryService>(),
+            sp.GetRequiredService<ILoggerFactory>()));
 
         return services.BuildServiceProvider();
     }

@@ -37,6 +37,19 @@ public sealed class ConfigService
         }
     }
 
+    public AppSettings Load()
+    {
+        _gate.Wait();
+        try
+        {
+            return LoadCore();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -114,6 +127,42 @@ public sealed class ConfigService
         }
 
         File.Move(temporary, _configFile, overwrite: true);
+    }
+
+    private AppSettings LoadCore()
+    {
+        if (!File.Exists(_configFile))
+        {
+            return new AppSettings();
+        }
+
+        try
+        {
+            using var stream = File.OpenRead(_configFile);
+            return JsonSerializer.Deserialize(stream, AppSettingsJsonContext.Default.AppSettings)
+                ?? new AppSettings();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to read configuration, attempting backup.");
+
+            var backup = _configFile + ".bak";
+            if (File.Exists(backup))
+            {
+                try
+                {
+                    using var fallback = File.OpenRead(backup);
+                    return JsonSerializer.Deserialize(fallback, AppSettingsJsonContext.Default.AppSettings)
+                        ?? new AppSettings();
+                }
+                catch (Exception backupException)
+                {
+                    _logger?.LogWarning(backupException, "Failed to read configuration backup.");
+                }
+            }
+
+            return new AppSettings();
+        }
     }
 
     private async Task<AppSettings> LoadCoreAsync(CancellationToken cancellationToken)

@@ -1,5 +1,35 @@
 # 開發紀錄
 
+## 2026-11-14 - v1.9.2
+
+### 目標
+
+改善工作列捷徑飛出面板的開啟速度，並解決快速連點時同時出現多個飛出面板的問題。
+
+### 變更
+
+- `Program.cs`：新增輕量入口，先解析 `--group`；編輯器執行中時透過具名管道送出請求後直接結束，不初始化 WPF。冷啟動則先取得具名 Mutex 去重，再建立 `App`。
+- `Helpers/CommandLineParser.cs`：從 `App` 抽出 `--group`／`--group=` 解析邏輯。
+- `Services/FlyoutIpc.cs`：新增具名管道客戶端與伺服器（`Mark.TaskbarFolders.Flyout`、`PipeOptions.CurrentUserOnly`），客戶端等待 `OK` 才視為成功。
+- `Services/FlyoutInstanceGuard.cs`：以分組 ID 雜湊建立 `Local\TaskbarFolders.Flyout.<hash>` Mutex，避免冷啟動重複程序。
+- `Services/FlyoutLauncher.cs`：支援由 DI 注入服務（`CreateForHost`），新增 `Show` 同步流程；同分類 500ms 內重複請求只啟用既有視窗；先顯示視窗再載入圖示。
+- `Services/EditorBootstrap.cs`：編輯器視窗顯示後啟動 `FlyoutIpcServer`，將請求派送至 UI 執行緒顯示飛出面板；DI 註冊 `FlyoutLauncher`。
+- `Services/ConfigService.cs`：新增同步 `Load()` 供飛出面板冷啟動使用。
+- `Services/ThemeService.cs`：主題未變更時跳過重建資源字典。
+- `TaskbarFolders.csproj`：設定 `StartupObject` 為 `Mark.TaskbarFolders.Program`。
+- `AssemblyInfo.cs`：加入 `InternalsVisibleTo("TaskbarFolders.Tests")`。
+- 新增 `CommandLineParserTests`、`FlyoutInstanceGuardTests`、`FlyoutIpcTests`。
+- `Directory.Build.props`：版本 1.9.2、`FileVersion` 1.9.2.0（`AssemblyVersion` 維持 1.7.0.0）。
+
+### 問題與解法
+
+- 具名管道的 `PipeStream.ReadTimeout` 在 Windows 同步管道上會拋出 `InvalidOperationException`（Timeouts are not supported on this stream），改用 `PipeOptions.Asynchronous` 搭配 `CancellationTokenSource` 控制連線與讀取逾時。
+
+### 待辦 / 已知限制
+
+- 編輯器開著 modal 對話框時，飛出面板可能顯示在對話框後方。
+- 飛出面板內改名與編輯器未儲存狀態仍可能競爭寫入 `config.json`（與舊版跨程序行為相同）。
+
 ## 2026-11-14 - v1.9.1
 
 ### 目標

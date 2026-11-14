@@ -22,6 +22,11 @@ public sealed class ThemeService
             return;
         }
 
+        if (_currentTheme is not null && IsDark == dark)
+        {
+            return;
+        }
+
         var source = new Uri(
             $"pack://application:,,,/TaskbarFolders;component/Resources/Themes/Colors.{(dark ? "Dark" : "Light")}.xaml",
             UriKind.Absolute);

@@ -17,7 +17,7 @@ public partial class App : Application
 
         try
         {
-            var groupId = ParseGroupId(e.Args);
+            var groupId = CommandLineParser.ParseGroupId(e.Args);
 
             var aumid = groupId is null
                 ? "Mark.TaskbarFolders.Editor"
@@ -41,7 +41,7 @@ public partial class App : Application
             else
             {
                 _flyout = new FlyoutLauncher();
-                if (!await _flyout.ShowAsync(groupId))
+                if (!_flyout.Show(groupId))
                 {
                     Shutdown();
                 }
@@ -66,6 +66,8 @@ public partial class App : Application
 
         _editor?.Dispose();
         _editor = null;
+
+        FlyoutInstanceGuard.Release();
 
         base.OnExit(e);
     }
@@ -111,25 +113,5 @@ public partial class App : Application
         {
             // Logging must never take down the application.
         }
-    }
-
-    private static string? ParseGroupId(IEnumerable<string> arguments)
-    {
-        string? result = null;
-        var args = arguments.ToList();
-        for (var index = 0; index < args.Count; index++)
-        {
-            var argument = args[index];
-            if (argument.Equals("--group", StringComparison.OrdinalIgnoreCase) && index + 1 < args.Count)
-            {
-                result = args[index + 1];
-            }
-            else if (argument.StartsWith("--group=", StringComparison.OrdinalIgnoreCase))
-            {
-                result = argument["--group=".Length..];
-            }
-        }
-
-        return string.IsNullOrWhiteSpace(result) ? null : result.Trim();
     }
 }
