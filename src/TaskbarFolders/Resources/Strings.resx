@@ -131,7 +131,7 @@
     <value>分類圖示</value>
   </data>
   <data name="IconColorFollowsTheme" xml:space="preserve">
-    <value>圖示底色會跟隨分類主題色</value>
+    <value>工作列捷徑圖示底色會跟隨分類主題色</value>
   </data>
   <data name="SettingsTitle" xml:space="preserve">
     <value>設定</value>

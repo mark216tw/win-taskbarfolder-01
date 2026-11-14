@@ -1,5 +1,26 @@
 # 開發紀錄
 
+## 2026-11-14 - v1.12.1
+
+### 目標
+
+讓編輯器的分類圖示預覽不再套用分類主題色，改用與圖示選擇面板一致的深灰底色；工作列捷徑圖示仍跟隨分類主題色。
+
+### 變更
+
+- `ViewModels/EditorViewModel.cs`：`LoadGroupIconAsync` 改以 `BuiltInIconCatalog.CreateImage` 的預設深灰底色繪製預覽；移除 `ThemeColor` 變更時的預覽重繪。
+- `Resources/Strings.resx`：圖示選擇面板提示改為「工作列捷徑圖示底色會跟隨分類主題色」。
+- `README.md`、`docs/USER_GUIDE.md`：更新圖示底色說明，區分編輯器預覽與工作列捷徑圖示。
+- `Directory.Build.props`：版本 1.12.1、`FileVersion` 1.12.1.0（`AssemblyVersion` 維持 1.7.0.0）。
+
+### 問題與解法
+
+- 分類圖示預覽與工作列 `.ico` 原本共用 `GroupThemeCatalog.ResolveIconBackground`；只在預覽端省略底色參數，讓兩者需求分開，不必調整捷徑產生邏輯。
+
+### 待辦 / 已知限制
+
+- 尚未實機確認深色模式下預覽深灰底色與圖示線條的對比度。
+
 ## 2026-11-14 - v1.12.0
 
 ### 目標
