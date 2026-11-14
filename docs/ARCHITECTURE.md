@@ -165,6 +165,8 @@ AppGroup
   Name       : string
   IconPath   : string?（builtin:<id>）
   ThemeColor : "None" | "Yellow" | "Blue" | "Green" | "Purple" | "Orange"
+               | "Red" | "Pink" | "Teal" | "Cyan" | "Indigo" | "Brown" | "Slate"
+               | "Lime" | "Navy" | "Magenta" | "Coral" | "Burgundy"
   Order      : int
   Items      : List<AppItem>
   Aumid      : "Mark.TaskbarFolders.Group.<Id>"（僅運算，不序列化）

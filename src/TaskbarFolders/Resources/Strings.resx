@@ -352,6 +352,42 @@
   <data name="ThemeColorOrange" xml:space="preserve">
     <value>暖陽橙</value>
   </data>
+  <data name="ThemeColorRed" xml:space="preserve">
+    <value>玫瑰紅</value>
+  </data>
+  <data name="ThemeColorPink" xml:space="preserve">
+    <value>櫻花粉</value>
+  </data>
+  <data name="ThemeColorTeal" xml:space="preserve">
+    <value>湖水綠</value>
+  </data>
+  <data name="ThemeColorCyan" xml:space="preserve">
+    <value>天空青</value>
+  </data>
+  <data name="ThemeColorIndigo" xml:space="preserve">
+    <value>靛藍</value>
+  </data>
+  <data name="ThemeColorBrown" xml:space="preserve">
+    <value>咖啡棕</value>
+  </data>
+  <data name="ThemeColorSlate" xml:space="preserve">
+    <value>石墨灰</value>
+  </data>
+  <data name="ThemeColorLime" xml:space="preserve">
+    <value>青檸綠</value>
+  </data>
+  <data name="ThemeColorNavy" xml:space="preserve">
+    <value>深海藍</value>
+  </data>
+  <data name="ThemeColorMagenta" xml:space="preserve">
+    <value>洋紅</value>
+  </data>
+  <data name="ThemeColorCoral" xml:space="preserve">
+    <value>珊瑚橘</value>
+  </data>
+  <data name="ThemeColorBurgundy" xml:space="preserve">
+    <value>酒紅</value>
+  </data>
   <data name="GroupItems" xml:space="preserve">
     <value>應用程式</value>
   </data>

@@ -5,9 +5,9 @@ namespace TaskbarFolders.Tests;
 public sealed class GroupThemeCatalogTests
 {
     [Fact]
-    public void All_HasFivePresets()
+    public void All_HasSeventeenPresets()
     {
-        Assert.Equal(5, GroupThemeCatalog.All.Count);
+        Assert.Equal(17, GroupThemeCatalog.All.Count);
     }
 
     [Fact]

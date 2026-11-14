@@ -109,130 +109,171 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0"
-                                   Grid.Column="1"
                                    Text="{res:Loc GroupName}"
                                    Style="{StaticResource SubtleTextStyle}" />
 
-                        <Button x:Name="IconPickerButton"
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Command="{Binding OpenIconPickerCommand}"
-                                Width="40"
-                                Height="40"
-                                Padding="0"
-                                Margin="0,4,12,0"
-                                VerticalAlignment="Center"
-                                ToolTip="{res:Loc BuiltInIcon}"
-                                AutomationProperties.Name="{res:Loc BuiltInIcon}">
-                            <Image Source="{Binding SelectedGroup.IconSource}"
-                                   Width="28"
-                                   Height="28"
-                                   Stretch="Uniform" />
-                        </Button>
-
-                        <Popup x:Name="IconPickerPopup"
-                               IsOpen="{Binding IsIconPickerOpen, Mode=TwoWay}"
-                               PlacementTarget="{Binding ElementName=IconPickerButton}"
-                               Placement="Bottom"
-                               StaysOpen="False"
-                               AllowsTransparency="True"
-                               DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <Border Style="{StaticResource CardBorderStyle}" Padding="8">
-                                <ScrollViewer MaxHeight="480"
-                                              VerticalScrollBarVisibility="Auto"
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <ItemsControl ItemsSource="{Binding IconThemeGroups}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="4,0,4,8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="{Binding Name}"
-                                                               FontWeight="SemiBold"
-                                                               VerticalAlignment="Center"
-                                                               MinWidth="48"
-                                                               Margin="0,0,8,0" />
-                                                    <ItemsControl Grid.Column="1"
-                                                                  ItemsSource="{Binding Icons}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <UniformGrid Columns="10" />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Button Style="{StaticResource IconChoiceButtonStyle}"
-                                                                        Width="40"
-                                                                        Height="40"
-                                                                        Command="{Binding DataContext.SelectBuiltInIconCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}, AncestorLevel=2}}"
-                                                                        CommandParameter="{Binding}"
-                                                                        ToolTip="{Binding Name}"
-                                                                        AutomationProperties.Name="{Binding Name}">
-                                                                    <Image Source="{Binding ImageSource}"
-                                                                           Width="26"
-                                                                           Height="26"
-                                                                           Stretch="Uniform" />
-                                                                </Button>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                            </Border>
-                        </Popup>
-
                         <TextBox Grid.Row="1"
-                                 Grid.Column="1"
                                  Text="{Binding SelectedGroup.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,0" />
 
-                        <TextBlock Grid.Row="2"
-                                   Grid.Column="1"
-                                   Text="{res:Loc ThemeColor}"
-                                   Style="{StaticResource SubtleTextStyle}"
-                                   Margin="0,12,0,0" />
+                        <StackPanel Grid.Row="2"
+                                    Orientation="Horizontal"
+                                    Margin="0,8,0,0">
+                            <Button x:Name="IconPickerButton"
+                                    Command="{Binding OpenIconPickerCommand}"
+                                    Width="40"
+                                    Height="40"
+                                    Padding="0"
+                                    Margin="0,0,8,0"
+                                    ToolTip="{res:Loc BuiltInIcon}"
+                                    AutomationProperties.Name="{res:Loc BuiltInIcon}">
+                                <Image Source="{Binding SelectedGroup.IconSource}"
+                                       Width="28"
+                                       Height="28"
+                                       Stretch="Uniform" />
+                            </Button>
 
-                        <ComboBox Grid.Row="3"
-                                  Grid.Column="1"
-                                  ItemsSource="{Binding ThemeColorOptions}"
-                                  SelectedValue="{Binding SelectedGroup.ThemeColor, Mode=TwoWay}"
-                                  SelectedValuePath="Id"
-                                  Margin="0,4,0,0"
-                                  AutomationProperties.Name="{res:Loc ThemeColor}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Border Width="16"
-                                                Height="16"
-                                                CornerRadius="4"
-                                                BorderThickness="1"
-                                                BorderBrush="{DynamicResource BorderBrush}"
-                                                Background="{Binding PreviewBrush}"
-                                                Margin="0,0,8,0" />
-                                        <TextBlock Text="{Binding Name}"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
+                            <Popup x:Name="IconPickerPopup"
+                                   IsOpen="{Binding IsIconPickerOpen, Mode=TwoWay}"
+                                   PlacementTarget="{Binding ElementName=IconPickerButton}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <Border Style="{StaticResource CardBorderStyle}" Padding="8">
+                                    <ScrollViewer MaxHeight="480"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsControl ItemsSource="{Binding IconThemeGroups}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="4,0,4,8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontWeight="SemiBold"
+                                                                   VerticalAlignment="Center"
+                                                                   MinWidth="48"
+                                                                   Margin="0,0,8,0" />
+                                                        <ItemsControl Grid.Column="1"
+                                                                      ItemsSource="{Binding Icons}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <UniformGrid Columns="10" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Button Style="{StaticResource IconChoiceButtonStyle}"
+                                                                            Width="40"
+                                                                            Height="40"
+                                                                            Command="{Binding DataContext.SelectBuiltInIconCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}, AncestorLevel=2}}"
+                                                                            CommandParameter="{Binding}"
+                                                                            ToolTip="{Binding Name}"
+                                                                            AutomationProperties.Name="{Binding Name}">
+                                                                        <Image Source="{Binding ImageSource}"
+                                                                               Width="26"
+                                                                               Height="26"
+                                                                               Stretch="Uniform" />
+                                                                    </Button>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+
+                            <Button x:Name="ThemePickerButton"
+                                    Command="{Binding OpenThemePickerCommand}"
+                                    Width="40"
+                                    Height="40"
+                                    Padding="0"
+                                    ToolTip="{res:Loc ThemeColor}"
+                                    AutomationProperties.Name="{res:Loc ThemeColor}">
+                                <Grid Width="28" Height="28">
+                                    <Border CornerRadius="6"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            Background="{Binding SelectedGroup.ThemePreviewBrush}" />
+                                    <Path Data="M 3,3 L 25,25"
+                                          Stroke="{DynamicResource SubtleTextBrush}"
+                                          StrokeThickness="2">
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedGroup.IsThemeNone}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                </Grid>
+                            </Button>
+
+                            <Popup x:Name="ThemePickerPopup"
+                                   IsOpen="{Binding IsThemePickerOpen, Mode=TwoWay}"
+                                   PlacementTarget="{Binding ElementName=ThemePickerButton}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <Border Style="{StaticResource CardBorderStyle}" Padding="8">
+                                    <ItemsControl ItemsSource="{Binding ThemeColorOptions}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel MaxWidth="276" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Style="{StaticResource IconChoiceButtonStyle}"
+                                                        Width="40"
+                                                        Height="40"
+                                                        Command="{Binding DataContext.SelectThemeColorCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                                        CommandParameter="{Binding}"
+                                                        AutomationProperties.Name="{Binding Name}">
+                                                    <Grid Width="24" Height="24">
+                                                        <Border CornerRadius="5"
+                                                                BorderThickness="1"
+                                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                                Background="{Binding PreviewBrush}" />
+                                                        <Path Data="M 2,2 L 22,22"
+                                                              Stroke="{DynamicResource SubtleTextBrush}"
+                                                              StrokeThickness="2">
+                                                            <Path.Style>
+                                                                <Style TargetType="Path">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsNone}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Path.Style>
+                                                        </Path>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </Popup>
+                        </StackPanel>
                     </Grid>
 
                     <Grid Grid.Row="2" Margin="0,4,0,8">

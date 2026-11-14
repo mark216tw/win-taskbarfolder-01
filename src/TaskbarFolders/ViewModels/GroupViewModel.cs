@@ -14,6 +14,7 @@ public partial class GroupViewModel : ObservableObject
         Name = group.Name;
         IconPath = group.IconPath;
         ThemeColor = GroupThemeCatalog.Normalize(group.ThemeColor);
+        UpdateThemePreview();
         foreach (var item in group.Items)
         {
             Items.Add(new ItemViewModel(item));
@@ -34,9 +35,23 @@ public partial class GroupViewModel : ObservableObject
     [ObservableProperty]
     private ImageSource? iconSource;
 
+    [ObservableProperty]
+    private Brush? themePreviewBrush;
+
+    [ObservableProperty]
+    private bool isThemeNone;
+
     public ObservableCollection<ItemViewModel> Items { get; } = [];
 
     public string Aumid => $"Mark.TaskbarFolders.Group.{Id}";
+
+    partial void OnThemeColorChanged(string value) => UpdateThemePreview();
+
+    private void UpdateThemePreview()
+    {
+        ThemePreviewBrush = GroupThemeCatalog.CreateSwatch(ThemeColor);
+        IsThemeNone = GroupThemeCatalog.Find(ThemeColor) is null;
+    }
 
     public AppGroup ToModel(int order) => new()
     {

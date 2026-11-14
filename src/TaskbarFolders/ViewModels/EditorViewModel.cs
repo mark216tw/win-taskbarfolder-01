@@ -68,7 +68,8 @@ public partial class EditorViewModel : ObservableObject
         ThemeColorOptions.Add(new GroupThemeOption(
             GroupThemeCatalog.NoneId,
             Strings.Get("ThemeColorNone"),
-            null));
+            null,
+            isNone: true));
 
         foreach (var definition in GroupThemeCatalog.All)
         {
@@ -127,6 +128,9 @@ public partial class EditorViewModel : ObservableObject
     [ObservableProperty]
     private bool isIconPickerOpen;
 
+    [ObservableProperty]
+    private bool isThemePickerOpen;
+
     public Task InitializeAsync(AppSettings settings)
     {
         _settings = settings;
@@ -169,6 +173,7 @@ public partial class EditorViewModel : ObservableObject
         SelectedGroup = Groups[0];
         UpdateValidation();
         SyncBuiltInIconSelection();
+        SyncThemeSelection();
         return Task.CompletedTask;
     }
 
@@ -208,11 +213,28 @@ public partial class EditorViewModel : ObservableObject
     {
         SelectedItem = null;
         IsIconPickerOpen = false;
+        IsThemePickerOpen = false;
         SyncBuiltInIconSelection();
+        SyncThemeSelection();
     }
 
     [RelayCommand]
     private void OpenIconPicker() => IsIconPickerOpen = true;
+
+    [RelayCommand]
+    private void OpenThemePicker() => IsThemePickerOpen = true;
+
+    [RelayCommand]
+    private void SelectThemeColor(GroupThemeOption? option)
+    {
+        if (SelectedGroup is null || option is null)
+        {
+            return;
+        }
+
+        SelectedGroup.ThemeColor = option.Id;
+        IsThemePickerOpen = false;
+    }
 
     [RelayCommand]
     private void AddGroup()
@@ -757,6 +779,11 @@ public partial class EditorViewModel : ObservableObject
             }
         }
 
+        if (e.PropertyName is nameof(GroupViewModel.ThemeColor))
+        {
+            SyncThemeSelection();
+        }
+
         if (e.PropertyName is nameof(GroupViewModel.Name) or nameof(GroupViewModel.IconPath))
         {
             UpdateValidation();
@@ -815,6 +842,19 @@ public partial class EditorViewModel : ObservableObject
             option.IsSelected = string.Equals(
                 selectedReference,
                 BuiltInIconCatalog.CreateReference(option.Id),
+                StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private void SyncThemeSelection()
+    {
+        var current = GroupThemeCatalog.Normalize(SelectedGroup?.ThemeColor);
+
+        foreach (var option in ThemeColorOptions)
+        {
+            option.IsSelected = string.Equals(
+                current,
+                option.Id,
                 StringComparison.OrdinalIgnoreCase);
         }
     }

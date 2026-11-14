@@ -1,5 +1,54 @@
 # 開發紀錄
 
+## 2026-11-14 - v1.11.0
+
+### 目標
+
+再擴充分類主題顏色，新增青檸綠、深海藍、洋紅、珊瑚橘、酒紅 5 色。
+
+### 變更
+
+- `Helpers/GroupThemeCatalog.cs`：新增 5 組主題，皆含淺色與深色色盤；主題總數 17。
+- `Resources/Strings.resx`：新增 5 個主題名稱字串，供無障礙名稱使用。
+- `tests/TaskbarFolders.Tests/GroupThemeCatalogTests.cs`：預設主題數量更新為 17。
+- `Directory.Build.props`：版本 1.11.0、`FileVersion` 1.11.0.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `README.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/ARCHITECTURE.md`：更新主題數量與顏色清單。
+
+### 問題與解法
+
+- 色塊選單為 6 欄配置，加入 5 色後共 18 個選項（含「無」），剛好形成 3 列，不需調整 `WrapPanel` 寬度。
+
+### 待辦 / 已知限制
+
+- 尚未實機檢視 17 色色塊選單在深色模式與高 DPI 下的顯示。
+
+## 2026-11-14 - v1.10.0
+
+### 目標
+
+擴充分類主題顏色，並將主題選擇改為與圖示選單一致的色塊彈出視窗；同時把分類圖示與分類主題按鈕排在同一列。
+
+### 變更
+
+- `Helpers/GroupThemeCatalog.cs`：新增玫瑰紅、櫻花粉、湖水綠、天空青、靛藍、咖啡棕、石墨灰 7 組主題，皆含淺色與深色色盤。
+- `Resources/Strings.resx`：新增 7 個主題名稱字串，供無障礙名稱使用。
+- `ViewModels/GroupThemeOption.cs`：改為 `ObservableObject`，新增 `IsSelected` 與 `IsNone`。
+- `ViewModels/GroupViewModel.cs`：新增 `ThemePreviewBrush`、`IsThemeNone`，隨 `ThemeColor` 更新。
+- `ViewModels/EditorViewModel.cs`：新增 `IsThemePickerOpen`、`OpenThemePickerCommand`、`SelectThemeColorCommand` 與 `SyncThemeSelection`；切換分類時關閉主題選單並同步選取狀態。
+- `Views/EditorWindow.xaml`：移除主題 `ComboBox`，改為色塊 Popup；分類圖示與分類主題按鈕並列，名稱輸入框改為整列寬度。
+- `tests/TaskbarFolders.Tests/GroupThemeCatalogTests.cs`：預設主題數量更新為 12。
+- `Directory.Build.props`：版本 1.10.0、`FileVersion` 1.10.0.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `README.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`、`docs/ARCHITECTURE.md`：更新主題數量、色塊選單與版面說明。
+
+### 問題與解法
+
+- 主題選單不再顯示名稱，仍需保留無障礙標示 → 繼續以字串資源建立 `GroupThemeOption.Name`，僅供 `AutomationProperties.Name` 使用。
+- 「無」主題沒有代表色 → 以色塊加斜線表示，並以 `IsThemeNone` 控制斜線顯示。
+
+### 待辦 / 已知限制
+
+- 尚未實機檢視 12 色色塊選單在深色模式、高 DPI 與小螢幕下的換行與位置。
+
 ## 2026-11-14 - v1.9.3
 
 ### 目標
