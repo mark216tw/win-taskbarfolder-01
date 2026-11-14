@@ -222,15 +222,16 @@ AppItem
 `%AppData%\TaskbarFolders\Shortcuts\` 內包含：
 
 - `<分類名稱>.lnk`：釘選用捷徑。
-- `<groupId>.sig`：捷徑簽章（分類 Id、名稱、圖示參照與執行檔路徑的 SHA-256）。
-- `<groupId>.<iconId>.builtin.ico`：內建圖示輸出。
-- `<groupId>.auto.ico`：無內建圖示時的字母備援圖示。
+- `<groupId>.sig`：捷徑簽章（分類 Id、名稱、圖示參照、分類主題色與執行檔路徑的 SHA-256）。
+- `<groupId>.<iconId>.<themeId>.builtin.ico`：內建圖示輸出，底色取自分類主題色。
+- `<groupId>.<themeId>.auto.ico`：無內建圖示時的字母備援圖示。
 
 增量重建條件：捷徑、簽章、圖示檔都存在，且簽章內容一致時不重建。`SyncAllAsync` 會刪除不再對應任何分類的 `.lnk`、`.ico`、`.sig`。
 
 ### 8.3 圖示快取
 
 - 記憶體快取鍵：圖示來源 + 尺寸（不做檔案 stat）。
+- 內建分類圖示記憶體快取鍵：圖示 Id + 底色；未指定底色時使用深灰 `#4B5563`。
 - 磁碟快取鍵：來源 + 檔案最後寫入時間 + 尺寸，經 SHA-256 取前 40 個十六進位字元作為檔名。
 - 超過 30 天未修改的 `.png` 會清除；以 `.lastprune` 標記節流為 24 小時。
 

@@ -6,5 +6,4 @@ public sealed record BuiltInIconDefinition(
     string Id,
     string ThemeId,
     string NameResourceKey,
-    Color Color,
     string PathData);

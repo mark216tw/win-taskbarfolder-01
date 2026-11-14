@@ -271,6 +271,7 @@ public sealed class ShortcutService
             group.Id,
             group.Name,
             group.IconPath ?? string.Empty,
+            GroupThemeCatalog.Normalize(group.ThemeColor),
             executable);
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
     }
@@ -315,22 +316,11 @@ public sealed class ShortcutService
         }
     }
 
-    private static readonly Color[] IconPalette =
-    [
-        Color.FromRgb(0x25, 0x63, 0xEB),
-        Color.FromRgb(0x0E, 0x9F, 0x6E),
-        Color.FromRgb(0xE1, 0x1D, 0x48),
-        Color.FromRgb(0xD9, 0x77, 0x06),
-        Color.FromRgb(0x7C, 0x3A, 0xED),
-        Color.FromRgb(0x08, 0x91, 0xB2),
-        Color.FromRgb(0xBE, 0x18, 0x5D),
-        Color.FromRgb(0x4B, 0x55, 0x63)
-    ];
-
     private string? ResolveIconPath(AppGroup group, out bool generated)
     {
         generated = false;
         var destinationPath = GetIconPath(group);
+        var background = GroupThemeCatalog.ResolveIconBackground(group.ThemeColor);
 
         if (BuiltInIconCatalog.IsBuiltIn(group.IconPath))
         {
@@ -339,7 +329,7 @@ public sealed class ShortcutService
             {
                 if (!File.Exists(destinationPath))
                 {
-                    BuiltInIconCatalog.SaveIco(iconReference, destinationPath);
+                    BuiltInIconCatalog.SaveIco(iconReference, destinationPath, background);
                 }
 
                 CleanupStaleBuiltInIcons(group.Id, destinationPath);
@@ -355,7 +345,8 @@ public sealed class ShortcutService
 
         try
         {
-            GenerateLetterIcon(group.Name, destinationPath);
+            GenerateLetterIcon(group.Name, destinationPath, background);
+            CleanupStaleLetterIcons(group.Id, destinationPath);
             generated = true;
             return destinationPath;
         }
@@ -368,13 +359,29 @@ public sealed class ShortcutService
 
     private string GetIconPath(AppGroup group)
     {
+        var themeToken = GetThemeToken(group.ThemeColor);
+
         if (!BuiltInIconCatalog.IsBuiltIn(group.IconPath))
         {
-            return Path.Combine(_shortcutsDirectory, group.Id + ".auto.ico");
+            return Path.Combine(_shortcutsDirectory, $"{group.Id}.{themeToken}.auto.ico");
         }
 
         var iconReference = BuiltInIconCatalog.NormalizeReference(group.IconPath);
-        return Path.Combine(_shortcutsDirectory, $"{group.Id}.{GetIconId(iconReference)}.builtin.ico");
+        return Path.Combine(
+            _shortcutsDirectory,
+            $"{group.Id}.{GetIconId(iconReference)}.{themeToken}.builtin.ico");
+    }
+
+    private static string GetThemeToken(string? themeColor)
+    {
+        var normalized = GroupThemeCatalog.Normalize(themeColor);
+        var builder = new StringBuilder(normalized.Length);
+        foreach (var character in normalized)
+        {
+            builder.Append(char.IsLetterOrDigit(character) ? character : '_');
+        }
+
+        return builder.Length == 0 ? "None" : builder.ToString();
     }
 
     private static string GetIconId(string? iconReference)
@@ -414,12 +421,31 @@ public sealed class ShortcutService
         }
     }
 
-    private static void GenerateLetterIcon(string name, string destinationPath)
+    private void CleanupStaleLetterIcons(string groupId, string keepPath)
+    {
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(_shortcutsDirectory, groupId + ".*auto.ico"))
+            {
+                if (string.Equals(file, keepPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                File.Delete(file);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to clean stale letter icon for group {Group}", groupId);
+        }
+    }
+
+    private static void GenerateLetterIcon(string name, string destinationPath, Color background)
     {
         const int size = 256;
         var text = string.IsNullOrWhiteSpace(name) ? "?" : name.Trim()[0].ToString();
-        var hash = StableHash(name) & 0x7FFFFFFF;
-        var brush = new SolidColorBrush(IconPalette[hash % IconPalette.Length]);
+        var brush = new SolidColorBrush(background);
         brush.Freeze();
 
         var visual = new DrawingVisual();
@@ -451,17 +477,4 @@ public sealed class ShortcutService
         IcoWriter.Write(bitmap, destinationPath);
     }
 
-    private static int StableHash(string value)
-    {
-        unchecked
-        {
-            var hash = 17;
-            foreach (var character in value)
-            {
-                hash = (hash * 31) + character;
-            }
-
-            return hash;
-        }
-    }
 }

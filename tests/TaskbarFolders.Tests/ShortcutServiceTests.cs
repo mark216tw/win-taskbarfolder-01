@@ -26,7 +26,7 @@ public sealed class ShortcutServiceTests
             Assert.True(File.Exists(path));
             Assert.Equal("遊戲.lnk", Path.GetFileName(path));
             Assert.Equal(group.Aumid, service.ReadShortcutAumid(path));
-            Assert.True(File.Exists(Path.Combine(directory, "games.auto.ico")));
+            Assert.True(File.Exists(Path.Combine(directory, "games.None.auto.ico")));
         }
         finally
         {
@@ -91,7 +91,7 @@ public sealed class ShortcutServiceTests
 
             var path = await service.CreateShortcutAsync(group);
 
-            Assert.True(File.Exists(Path.Combine(directory, "tools.work-folder.builtin.ico")));
+            Assert.True(File.Exists(Path.Combine(directory, "tools.work-folder.None.builtin.ico")));
 
             var oldTimestamp = new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Utc);
             File.SetLastWriteTimeUtc(path, oldTimestamp);
@@ -100,6 +100,64 @@ public sealed class ShortcutServiceTests
 
             Assert.Equal(path, secondPath);
             Assert.Equal(oldTimestamp, File.GetLastWriteTimeUtc(path));
+        }
+        finally
+        {
+            DeleteDirectory(directory);
+        }
+    }
+
+    [Fact]
+    public async Task CreateShortcut_RegeneratesIconWhenThemeColorChanges()
+    {
+        var directory = CreateDirectory();
+        using var sta = new StaExecutor();
+        try
+        {
+            var service = new ShortcutService(sta, NullLogger<ShortcutService>.Instance, directory);
+            var group = new AppGroup
+            {
+                Id = "tools",
+                Name = "工具",
+                IconPath = BuiltInIconCatalog.DefaultIconReference,
+                ThemeColor = "Blue"
+            };
+
+            await service.CreateShortcutAsync(group);
+            var blueIcon = Path.Combine(directory, "tools.work-folder.Blue.builtin.ico");
+            Assert.True(File.Exists(blueIcon));
+
+            group.ThemeColor = "Red";
+            await service.CreateShortcutAsync(group);
+
+            Assert.True(File.Exists(Path.Combine(directory, "tools.work-folder.Red.builtin.ico")));
+            Assert.False(File.Exists(blueIcon));
+        }
+        finally
+        {
+            DeleteDirectory(directory);
+        }
+    }
+
+    [Fact]
+    public async Task CreateShortcut_RegeneratesLetterIconWhenThemeColorChanges()
+    {
+        var directory = CreateDirectory();
+        using var sta = new StaExecutor();
+        try
+        {
+            var service = new ShortcutService(sta, NullLogger<ShortcutService>.Instance, directory);
+            var group = new AppGroup { Id = "tools", Name = "工具", ThemeColor = "Blue" };
+
+            await service.CreateShortcutAsync(group);
+            var blueIcon = Path.Combine(directory, "tools.Blue.auto.ico");
+            Assert.True(File.Exists(blueIcon));
+
+            group.ThemeColor = "Red";
+            await service.CreateShortcutAsync(group);
+
+            Assert.True(File.Exists(Path.Combine(directory, "tools.Red.auto.ico")));
+            Assert.False(File.Exists(blueIcon));
         }
         finally
         {

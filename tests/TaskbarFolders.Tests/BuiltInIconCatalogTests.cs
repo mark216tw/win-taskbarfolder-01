@@ -53,23 +53,44 @@ public sealed class BuiltInIconCatalogTests
     }
 
     [Fact]
-    public void Colors_AreVariedWithinEveryTheme()
+    public async Task CreateImage_UsesDefaultBackgroundWhenColorOmitted()
     {
-        Assert.True(BuiltInIconCatalog.All.Select(definition => definition.Color).Distinct().Count() >= 8);
+        using var sta = new StaExecutor();
 
-        foreach (var theme in BuiltInIconCatalog.Themes)
-        {
-            var colors = BuiltInIconCatalog.All
-                .Where(definition => string.Equals(
-                    definition.ThemeId,
-                    theme.Id,
-                    StringComparison.OrdinalIgnoreCase))
-                .Select(definition => definition.Color)
-                .Distinct()
-                .Count();
+        var image = await sta.InvokeAsync(() => BuiltInIconCatalog.CreateImage("work-folder"));
 
-            Assert.True(colors > 1, $"{theme.Id} icons should not share a single fixed color.");
-        }
+        Assert.NotNull(image);
+        AssertBackgroundColor(image!, BuiltInIconCatalog.DefaultBackground);
+    }
+
+    [Fact]
+    public async Task CreateImage_UsesRequestedBackground()
+    {
+        using var sta = new StaExecutor();
+        var theme = GroupThemeCatalog.Find("Blue");
+        Assert.NotNull(theme);
+
+        var image = await sta.InvokeAsync(
+            () => BuiltInIconCatalog.CreateImage("work-folder", theme!.Swatch));
+
+        Assert.NotNull(image);
+        AssertBackgroundColor(image!, theme!.Swatch);
+    }
+
+    [Fact]
+    public async Task CreateImage_CachesPerBackground()
+    {
+        using var sta = new StaExecutor();
+        var red = System.Windows.Media.Color.FromRgb(0xFF, 0x00, 0x00);
+
+        var defaultImage = await sta.InvokeAsync(() => BuiltInIconCatalog.CreateImage("work-folder"));
+        var redImage = await sta.InvokeAsync(() => BuiltInIconCatalog.CreateImage("work-folder", red));
+
+        Assert.NotNull(defaultImage);
+        Assert.NotNull(redImage);
+        Assert.NotSame(defaultImage, redImage);
+        AssertBackgroundColor(defaultImage!, BuiltInIconCatalog.DefaultBackground);
+        AssertBackgroundColor(redImage!, red);
     }
 
     [Fact]
@@ -117,6 +138,21 @@ public sealed class BuiltInIconCatalogTests
         });
     }
 
+    private static void AssertBackgroundColor(
+        System.Windows.Media.Imaging.BitmapSource image,
+        System.Windows.Media.Color expected)
+    {
+        var stride = image.PixelWidth * 4;
+        var pixels = new byte[stride * image.PixelHeight];
+        image.CopyPixels(pixels, stride, 0);
+        var offset = (8 * stride) + (128 * 4);
+
+        Assert.Equal(expected.B, pixels[offset]);
+        Assert.Equal(expected.G, pixels[offset + 1]);
+        Assert.Equal(expected.R, pixels[offset + 2]);
+        Assert.Equal(255, pixels[offset + 3]);
+    }
+
     private static bool HasWhiteGlyph(System.Windows.Media.Imaging.BitmapSource image)
     {
         var stride = image.PixelWidth * 4;
@@ -156,7 +192,7 @@ public sealed class BuiltInIconCatalogTests
             var path = await service.CreateShortcutAsync(group);
 
             Assert.Equal("遊戲.lnk", Path.GetFileName(path));
-            Assert.True(File.Exists(Path.Combine(directory, "games.games-gamepad.builtin.ico")));
+            Assert.True(File.Exists(Path.Combine(directory, "games.games-gamepad.None.builtin.ico")));
         }
         finally
         {

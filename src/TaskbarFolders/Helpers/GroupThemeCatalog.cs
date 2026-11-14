@@ -514,4 +514,7 @@ public static class GroupThemeCatalog
         brush.Freeze();
         return brush;
     }
+
+    public static Color ResolveIconBackground(string? themeColor) =>
+        Find(themeColor)?.Swatch ?? BuiltInIconCatalog.DefaultBackground;
 }

@@ -1,5 +1,31 @@
 # 開發紀錄
 
+## 2026-11-14 - v1.12.0
+
+### 目標
+
+讓分類圖示底色自動跟隨分類主題色；圖示選單內的圖示底色統一為深灰。
+
+### 變更
+
+- `Helpers/BuiltInIconCatalog.cs`：新增 `DefaultBackground`（`#4B5563`）；`CreateImage`／`SaveIco` 接受底色參數，記憶體快取鍵改為「圖示 Id + 底色」；移除固定 `IconColors` 與 `PickColor`。
+- `Helpers/BuiltInIconDefinition.cs`：移除已不再使用的 `Color` 欄位。
+- `Helpers/GroupThemeCatalog.cs`：新增 `ResolveIconBackground`，有主題色時回傳該主題 `Swatch`，否則回傳深灰。
+- `ViewModels/EditorViewModel.cs`：分類圖示預覽改依 `ThemeColor` 取底色；切換主題色時即時重繪。
+- `Services/ShortcutService.cs`：產生的 `.ico` 使用主題色為底色；檔名加入主題色識別（舊色檔由既有清理邏輯移除）；簽章納入主題色；字母備援圖示也使用主題色。
+- `Views/EditorWindow.xaml`、`Resources/Strings.resx`：圖示選單新增「圖示底色會跟隨分類主題色」提示。
+- `tests/TaskbarFolders.Tests/`：更新圖示底色、快取分離、主題色變更重建 `.ico` 等測試。
+- `Directory.Build.props`：版本 1.12.0、`FileVersion` 1.12.0.0（`AssemblyVersion` 維持 1.7.0.0）。
+
+### 問題與解法
+
+- 原本 `IconService` 的圖示快取與分類圖示無關，無需調整；分類圖示快取只在 `BuiltInIconCatalog`，將底色加入鍵值即可避免換色後拿到舊圖。
+- `.ico` 若沿用固定檔名，換色後會因檔案已存在而跳過重繪；改以主題色納入檔名並讓既有 `CleanupStaleBuiltInIcons` 清除舊檔。
+
+### 待辦 / 已知限制
+
+- 尚未實機檢視各主題色在深色模式與高 DPI 下的圖示對比度。
+
 ## 2026-11-14 - v1.11.0
 
 ### 目標

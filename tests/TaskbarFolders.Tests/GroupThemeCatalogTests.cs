@@ -39,6 +39,17 @@ public sealed class GroupThemeCatalogTests
     }
 
     [Fact]
+    public void ResolveIconBackground_UsesThemeSwatchOrDefault()
+    {
+        Assert.Equal(BuiltInIconCatalog.DefaultBackground, GroupThemeCatalog.ResolveIconBackground("None"));
+        Assert.Equal(BuiltInIconCatalog.DefaultBackground, GroupThemeCatalog.ResolveIconBackground(null));
+
+        var blue = GroupThemeCatalog.Find("Blue");
+        Assert.NotNull(blue);
+        Assert.Equal(blue!.Swatch, GroupThemeCatalog.ResolveIconBackground("blue"));
+    }
+
+    [Fact]
     public void Palettes_HaveContrastingSurfaceAndText()
     {
         foreach (var definition in GroupThemeCatalog.All)

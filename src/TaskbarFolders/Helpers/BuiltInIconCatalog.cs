@@ -13,6 +13,8 @@ public static class BuiltInIconCatalog
 
     public static string DefaultIconReference => CreateReference(DefaultIconId);
 
+    public static Color DefaultBackground { get; } = Color.FromRgb(0x4B, 0x55, 0x63);
+
     private const int BitmapSize = 256;
     private const double GlyphExtent = 150;
     private const double StrokeWidth = 14;
@@ -22,26 +24,6 @@ public static class BuiltInIconCatalog
 
     private static readonly ConcurrentDictionary<string, BitmapSource> ImageCache =
         new(StringComparer.OrdinalIgnoreCase);
-
-    private static readonly Color[] IconColors =
-    [
-        Color.FromRgb(0x1D, 0x4E, 0xD8),
-        Color.FromRgb(0x0E, 0x9F, 0x6E),
-        Color.FromRgb(0xBE, 0x18, 0x5D),
-        Color.FromRgb(0xD9, 0x77, 0x06),
-        Color.FromRgb(0x7C, 0x3A, 0xED),
-        Color.FromRgb(0x08, 0x91, 0xB2),
-        Color.FromRgb(0xE1, 0x1D, 0x48),
-        Color.FromRgb(0x4B, 0x55, 0x63),
-        Color.FromRgb(0x0F, 0x76, 0x6E),
-        Color.FromRgb(0xB4, 0x53, 0x09),
-        Color.FromRgb(0x6D, 0x28, 0xD9),
-        Color.FromRgb(0xDB, 0x27, 0x77),
-        Color.FromRgb(0x0E, 0xA5, 0xE9),
-        Color.FromRgb(0x16, 0xA3, 0x4A),
-        Color.FromRgb(0xC2, 0x41, 0x0C),
-        Color.FromRgb(0x65, 0x30, 0xA0)
-    ];
 
     public static IReadOnlyList<BuiltInIconTheme> Themes { get; } =
     [
@@ -83,21 +65,23 @@ public static class BuiltInIconCatalog
         return Index.TryGetValue(id, out var definition) ? definition : null;
     }
 
-    public static BitmapSource? CreateImage(string? iconId)
+    public static BitmapSource? CreateImage(string? iconId, Color? background = null)
     {
         if (string.IsNullOrWhiteSpace(iconId) || !Index.TryGetValue(iconId, out var definition))
         {
             return null;
         }
 
-        return ImageCache.GetOrAdd(definition.Id, _ => Render(definition));
+        var color = background ?? DefaultBackground;
+        var key = $"{definition.Id}|{color.R:X2}{color.G:X2}{color.B:X2}";
+        return ImageCache.GetOrAdd(key, _ => Render(definition, color));
     }
 
-    public static void SaveIco(string iconReference, string destinationPath)
+    public static void SaveIco(string iconReference, string destinationPath, Color? background = null)
     {
         var definition = Find(iconReference)
             ?? throw new ArgumentException("Unknown built-in icon.", nameof(iconReference));
-        var image = CreateImage(definition.Id)
+        var image = CreateImage(definition.Id, background)
             ?? throw new InvalidOperationException("Unable to render built-in icon.");
 
         IcoWriter.Write(image, destinationPath);
@@ -206,21 +190,8 @@ public static class BuiltInIconCatalog
                 entry.Id,
                 theme.Id,
                 entry.NameResourceKey,
-                PickColor(entry.Id),
                 entry.PathData));
         }
-    }
-
-    private static Color PickColor(string iconId)
-    {
-        var hash = 2166136261u;
-        foreach (var character in iconId)
-        {
-            hash ^= char.ToUpperInvariant(character);
-            hash *= 16777619u;
-        }
-
-        return IconColors[hash % (uint)IconColors.Length];
     }
 
     private static Geometry GetGeometry(BuiltInIconDefinition definition) =>
@@ -231,15 +202,15 @@ public static class BuiltInIconCatalog
             return geometry;
         });
 
-    private static BitmapSource Render(BuiltInIconDefinition definition)
+    private static BitmapSource Render(BuiltInIconDefinition definition, Color background)
     {
         var visual = new DrawingVisual();
         using (var context = visual.RenderOpen())
         {
-            var background = new SolidColorBrush(definition.Color);
-            background.Freeze();
+            var backgroundBrush = new SolidColorBrush(background);
+            backgroundBrush.Freeze();
             context.DrawRoundedRectangle(
-                background,
+                backgroundBrush,
                 null,
                 new Rect(0, 0, BitmapSize, BitmapSize),
                 56,

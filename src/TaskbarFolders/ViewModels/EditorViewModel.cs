@@ -726,7 +726,9 @@ public partial class EditorViewModel : ObservableObject
 
         group.IconSource = definition is null
             ? null
-            : BuiltInIconCatalog.CreateImage(definition.Id);
+            : BuiltInIconCatalog.CreateImage(
+                definition.Id,
+                GroupThemeCatalog.ResolveIconBackground(group.ThemeColor));
         return Task.CompletedTask;
     }
 
@@ -772,11 +774,12 @@ public partial class EditorViewModel : ObservableObject
         if (e.PropertyName is nameof(GroupViewModel.IconPath))
         {
             SyncBuiltInIconSelection();
+        }
 
-            if (sender is GroupViewModel group)
-            {
-                _ = LoadGroupIconAsync(group);
-            }
+        if ((e.PropertyName is nameof(GroupViewModel.IconPath) or nameof(GroupViewModel.ThemeColor))
+            && sender is GroupViewModel group)
+        {
+            _ = LoadGroupIconAsync(group);
         }
 
         if (e.PropertyName is nameof(GroupViewModel.ThemeColor))
