@@ -1,5 +1,30 @@
 # 開發紀錄
 
+## 2026-11-14 - v1.9.3
+
+### 目標
+
+在設定頁新增「關於」區塊，讓使用者可直接查看版本、授權與隱私資訊。
+
+### 變更
+
+- `Helpers/AboutInfo.cs`（新增）：由組件屬性讀取資訊版本、檔案版本與著作權；資訊版本會移除 `+` 後的建置中繼資料。
+- `ViewModels/EditorViewModel.cs`：新增 `AppVersion`、`AppFileVersion`、`AppCopyright` 唯讀屬性供設定頁繫結。
+- `Views/SettingsWindow.xaml`：在分類設定下方新增「關於」卡片，顯示應用程式名稱、版本、檔案版本、授權、著作權與隱私說明。
+- `Resources/Strings.resx`：新增「關於」區塊相關繁體中文字串。
+- `Directory.Build.props`：加入 `Copyright` 組件屬性；版本 1.9.3、`FileVersion` 1.9.3.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `tests/TaskbarFolders.Tests/AboutInfoTests.cs`（新增）：驗證版本、檔案版本與著作權皆取自組件屬性。
+- `README.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`、`docs/DEVELOPMENT.md`：補充關於區塊說明並更新版本範例。
+
+### 問題與解法
+
+- 資訊版本可能包含 `+<commit>` 中繼資料，直接顯示會過長 → 顯示前移除 `+` 之後的內容。
+- 設定頁沿用 `EditorViewModel` 作為 `DataContext` → 以唯讀屬性提供版本資訊，避免在 XAML 直接呼叫組件反射。
+
+### 待辦 / 已知限制
+
+- 尚未實機檢視「關於」卡片在深色模式與高 DPI 下的間距。
+
 ## 2026-11-14 - v1.9.2
 
 ### 目標

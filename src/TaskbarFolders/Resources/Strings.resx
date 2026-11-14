@@ -535,4 +535,28 @@
   <data name="ErrorEditDisplayName" xml:space="preserve">
     <value>無法儲存顯示名稱，請稍後再試。</value>
   </data>
+  <data name="AboutSection" xml:space="preserve">
+    <value>關於</value>
+  </data>
+  <data name="AboutDescription" xml:space="preserve">
+    <value>工作列分類與快速啟動工具</value>
+  </data>
+  <data name="AboutVersionLabel" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="AboutFileVersionLabel" xml:space="preserve">
+    <value>檔案版本</value>
+  </data>
+  <data name="AboutLicenseLabel" xml:space="preserve">
+    <value>授權</value>
+  </data>
+  <data name="AboutLicenseValue" xml:space="preserve">
+    <value>MIT License</value>
+  </data>
+  <data name="AboutCopyrightLabel" xml:space="preserve">
+    <value>著作權</value>
+  </data>
+  <data name="AboutPrivacyHint" xml:space="preserve">
+    <value>所有設定與資料僅儲存在本機，不會收集或上傳任何個人資料。</value>
+  </data>
 </root>

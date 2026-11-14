@@ -91,6 +91,12 @@ public partial class EditorViewModel : ObservableObject
 
     public ObservableCollection<GroupThemeOption> ThemeColorOptions { get; } = [];
 
+    public string AppVersion => AboutInfo.Version;
+
+    public string AppFileVersion => AboutInfo.FileVersion;
+
+    public string AppCopyright => AboutInfo.Copyright;
+
     [ObservableProperty]
     private GroupViewModel? selectedGroup;
 

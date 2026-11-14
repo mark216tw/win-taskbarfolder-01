@@ -16,6 +16,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
@@ -63,7 +64,74 @@
             </StackPanel>
         </Border>
 
-        <StackPanel Grid.Row="3"
+        <Border Grid.Row="3"
+                Style="{StaticResource CardBorderStyle}"
+                Padding="16"
+                Margin="0,12,0,0">
+            <StackPanel>
+                <TextBlock Text="{res:Loc AboutSection}"
+                           Style="{StaticResource SubtleTextStyle}"
+                           Margin="0,0,0,6" />
+                <TextBlock Text="{res:Loc AppTitle}"
+                           FontWeight="SemiBold" />
+                <TextBlock Text="{res:Loc AboutDescription}"
+                           Style="{StaticResource SubtleTextStyle}"
+                           Margin="0,2,0,0" />
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="0"
+                               Text="{res:Loc AboutVersionLabel}"
+                               Style="{StaticResource SubtleTextStyle}"
+                               Margin="0,0,12,4" />
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="1"
+                               Text="{Binding AppVersion}"
+                               Margin="0,0,0,4" />
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="0"
+                               Text="{res:Loc AboutFileVersionLabel}"
+                               Style="{StaticResource SubtleTextStyle}"
+                               Margin="0,0,12,4" />
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding AppFileVersion}"
+                               Margin="0,0,0,4" />
+                    <TextBlock Grid.Row="2"
+                               Grid.Column="0"
+                               Text="{res:Loc AboutLicenseLabel}"
+                               Style="{StaticResource SubtleTextStyle}"
+                               Margin="0,0,12,4" />
+                    <TextBlock Grid.Row="2"
+                               Grid.Column="1"
+                               Text="{res:Loc AboutLicenseValue}"
+                               Margin="0,0,0,4" />
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="0"
+                               Text="{res:Loc AboutCopyrightLabel}"
+                               Style="{StaticResource SubtleTextStyle}"
+                               Margin="0,0,12,0" />
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="1"
+                               Text="{Binding AppCopyright}" />
+                </Grid>
+                <TextBlock Text="{res:Loc AboutPrivacyHint}"
+                           Style="{StaticResource SubtleTextStyle}"
+                           Margin="0,10,0,0" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="4"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0,16,0,0">
