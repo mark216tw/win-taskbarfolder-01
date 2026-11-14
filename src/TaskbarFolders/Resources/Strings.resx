@@ -133,65 +133,203 @@
   <data name="SettingsTitle" xml:space="preserve">
     <value>設定</value>
   </data>
-  <data name="IconFolder" xml:space="preserve">
-    <value>資料夾</value>
-  </data>
-  <data name="IconMail" xml:space="preserve">
-    <value>郵件</value>
-  </data>
-  <data name="IconCalendar" xml:space="preserve">
-    <value>行事曆</value>
-  </data>
-  <data name="IconNotes" xml:space="preserve">
-    <value>記事</value>
-  </data>
-  <data name="IconFiles" xml:space="preserve">
-    <value>檔案</value>
-  </data>
-  <data name="IconBrowser" xml:space="preserve">
-    <value>瀏覽器</value>
-  </data>
-  <data name="IconTerminal" xml:space="preserve">
-    <value>終端機</value>
-  </data>
-  <data name="IconSettings" xml:space="preserve">
-    <value>設定</value>
-  </data>
-  <data name="IconMusic" xml:space="preserve">
-    <value>音樂</value>
-  </data>
-  <data name="IconGames" xml:space="preserve">
-    <value>遊戲</value>
-  </data>
-  <data name="IconStar" xml:space="preserve">
-    <value>星號</value>
-  </data>
-  <data name="IconHome" xml:space="preserve">
-    <value>首頁</value>
-  </data>
-  <data name="IconWork" xml:space="preserve">
+  <data name="IconThemeWork" xml:space="preserve">
     <value>工作</value>
   </data>
-  <data name="IconCode" xml:space="preserve">
-    <value>程式碼</value>
+  <data name="IconThemeDevelopment" xml:space="preserve">
+    <value>開發</value>
   </data>
-  <data name="IconChat" xml:space="preserve">
-    <value>聊天</value>
+  <data name="IconThemeMedia" xml:space="preserve">
+    <value>影音</value>
   </data>
-  <data name="IconPhoto" xml:space="preserve">
-    <value>相片</value>
+  <data name="IconThemeLife" xml:space="preserve">
+    <value>生活</value>
   </data>
-  <data name="IconVideo" xml:space="preserve">
-    <value>影片</value>
+  <data name="IconThemeGames" xml:space="preserve">
+    <value>遊戲</value>
   </data>
-  <data name="IconBook" xml:space="preserve">
-    <value>書本</value>
+  <data name="IconThemeSoftware" xml:space="preserve">
+    <value>軟體</value>
   </data>
-  <data name="IconSearch" xml:space="preserve">
+  <data name="IconWorkFolder" xml:space="preserve">
+    <value>資料夾</value>
+  </data>
+  <data name="IconWorkMail" xml:space="preserve">
+    <value>郵件</value>
+  </data>
+  <data name="IconWorkCalendar" xml:space="preserve">
+    <value>行事曆</value>
+  </data>
+  <data name="IconWorkNotes" xml:space="preserve">
+    <value>記事</value>
+  </data>
+  <data name="IconWorkTasks" xml:space="preserve">
+    <value>待辦</value>
+  </data>
+  <data name="IconWorkFiles" xml:space="preserve">
+    <value>檔案</value>
+  </data>
+  <data name="IconWorkSearch" xml:space="preserve">
     <value>搜尋</value>
   </data>
-  <data name="IconDownload" xml:space="preserve">
+  <data name="IconWorkDownload" xml:space="preserve">
     <value>下載</value>
+  </data>
+  <data name="IconWorkBriefcase" xml:space="preserve">
+    <value>公事包</value>
+  </data>
+  <data name="IconWorkChart" xml:space="preserve">
+    <value>報表</value>
+  </data>
+  <data name="IconDevelopmentTerminal" xml:space="preserve">
+    <value>終端機</value>
+  </data>
+  <data name="IconDevelopmentCode" xml:space="preserve">
+    <value>程式碼</value>
+  </data>
+  <data name="IconDevelopmentSettings" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="IconDevelopmentDatabase" xml:space="preserve">
+    <value>資料庫</value>
+  </data>
+  <data name="IconDevelopmentServer" xml:space="preserve">
+    <value>伺服器</value>
+  </data>
+  <data name="IconDevelopmentCloud" xml:space="preserve">
+    <value>雲端</value>
+  </data>
+  <data name="IconDevelopmentBranch" xml:space="preserve">
+    <value>分支</value>
+  </data>
+  <data name="IconDevelopmentBug" xml:space="preserve">
+    <value>除錯</value>
+  </data>
+  <data name="IconDevelopmentPackage" xml:space="preserve">
+    <value>套件</value>
+  </data>
+  <data name="IconDevelopmentApi" xml:space="preserve">
+    <value>介接</value>
+  </data>
+  <data name="IconMediaMusic" xml:space="preserve">
+    <value>音樂</value>
+  </data>
+  <data name="IconMediaVideo" xml:space="preserve">
+    <value>影片</value>
+  </data>
+  <data name="IconMediaPhoto" xml:space="preserve">
+    <value>相片</value>
+  </data>
+  <data name="IconMediaCamera" xml:space="preserve">
+    <value>相機</value>
+  </data>
+  <data name="IconMediaHeadphones" xml:space="preserve">
+    <value>耳機</value>
+  </data>
+  <data name="IconMediaMicrophone" xml:space="preserve">
+    <value>麥克風</value>
+  </data>
+  <data name="IconMediaPodcast" xml:space="preserve">
+    <value>廣播</value>
+  </data>
+  <data name="IconMediaFilm" xml:space="preserve">
+    <value>電影</value>
+  </data>
+  <data name="IconMediaGallery" xml:space="preserve">
+    <value>相簿</value>
+  </data>
+  <data name="IconMediaPlay" xml:space="preserve">
+    <value>播放</value>
+  </data>
+  <data name="IconLifeHome" xml:space="preserve">
+    <value>住家</value>
+  </data>
+  <data name="IconLifeStar" xml:space="preserve">
+    <value>我的最愛</value>
+  </data>
+  <data name="IconLifeHeart" xml:space="preserve">
+    <value>愛心</value>
+  </data>
+  <data name="IconLifeCart" xml:space="preserve">
+    <value>購物</value>
+  </data>
+  <data name="IconLifeFood" xml:space="preserve">
+    <value>餐飲</value>
+  </data>
+  <data name="IconLifeCoffee" xml:space="preserve">
+    <value>咖啡</value>
+  </data>
+  <data name="IconLifeTravel" xml:space="preserve">
+    <value>旅遊</value>
+  </data>
+  <data name="IconLifeWeather" xml:space="preserve">
+    <value>天氣</value>
+  </data>
+  <data name="IconLifeHealth" xml:space="preserve">
+    <value>健康</value>
+  </data>
+  <data name="IconLifeBook" xml:space="preserve">
+    <value>閱讀</value>
+  </data>
+  <data name="IconGamesGamepad" xml:space="preserve">
+    <value>遊戲</value>
+  </data>
+  <data name="IconGamesChat" xml:space="preserve">
+    <value>聊天</value>
+  </data>
+  <data name="IconGamesUsers" xml:space="preserve">
+    <value>社群</value>
+  </data>
+  <data name="IconGamesGlobe" xml:space="preserve">
+    <value>瀏覽</value>
+  </data>
+  <data name="IconGamesRocket" xml:space="preserve">
+    <value>啟動</value>
+  </data>
+  <data name="IconGamesTrophy" xml:space="preserve">
+    <value>獎盃</value>
+  </data>
+  <data name="IconGamesDice" xml:space="preserve">
+    <value>骰子</value>
+  </data>
+  <data name="IconGamesPuzzle" xml:space="preserve">
+    <value>益智</value>
+  </data>
+  <data name="IconGamesGift" xml:space="preserve">
+    <value>禮物</value>
+  </data>
+  <data name="IconGamesShare" xml:space="preserve">
+    <value>分享</value>
+  </data>
+  <data name="IconSoftwareApp" xml:space="preserve">
+    <value>應用程式</value>
+  </data>
+  <data name="IconSoftwareInstall" xml:space="preserve">
+    <value>安裝</value>
+  </data>
+  <data name="IconSoftwareUpdate" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="IconSoftwareStore" xml:space="preserve">
+    <value>商店</value>
+  </data>
+  <data name="IconSoftwarePlugin" xml:space="preserve">
+    <value>外掛</value>
+  </data>
+  <data name="IconSoftwareExtension" xml:space="preserve">
+    <value>擴充</value>
+  </data>
+  <data name="IconSoftwareLicense" xml:space="preserve">
+    <value>授權</value>
+  </data>
+  <data name="IconSoftwareBackup" xml:space="preserve">
+    <value>備份</value>
+  </data>
+  <data name="IconSoftwareDriver" xml:space="preserve">
+    <value>驅動</value>
+  </data>
+  <data name="IconSoftwareUtility" xml:space="preserve">
+    <value>工具</value>
   </data>
   <data name="ThemeColor" xml:space="preserve">
     <value>分類主題</value>

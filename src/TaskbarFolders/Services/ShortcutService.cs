@@ -334,11 +334,12 @@ public sealed class ShortcutService
 
         if (BuiltInIconCatalog.IsBuiltIn(group.IconPath))
         {
+            var iconReference = BuiltInIconCatalog.NormalizeReference(group.IconPath);
             try
             {
                 if (!File.Exists(destinationPath))
                 {
-                    BuiltInIconCatalog.SaveIco(group.IconPath!, destinationPath);
+                    BuiltInIconCatalog.SaveIco(iconReference, destinationPath);
                 }
 
                 CleanupStaleBuiltInIcons(group.Id, destinationPath);
@@ -365,10 +366,16 @@ public sealed class ShortcutService
         }
     }
 
-    private string GetIconPath(AppGroup group) =>
-        BuiltInIconCatalog.IsBuiltIn(group.IconPath)
-            ? Path.Combine(_shortcutsDirectory, $"{group.Id}.{GetIconId(group.IconPath)}.builtin.ico")
-            : Path.Combine(_shortcutsDirectory, group.Id + ".auto.ico");
+    private string GetIconPath(AppGroup group)
+    {
+        if (!BuiltInIconCatalog.IsBuiltIn(group.IconPath))
+        {
+            return Path.Combine(_shortcutsDirectory, group.Id + ".auto.ico");
+        }
+
+        var iconReference = BuiltInIconCatalog.NormalizeReference(group.IconPath);
+        return Path.Combine(_shortcutsDirectory, $"{group.Id}.{GetIconId(iconReference)}.builtin.ico");
+    }
 
     private static string GetIconId(string? iconReference)
     {

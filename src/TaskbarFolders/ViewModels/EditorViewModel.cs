@@ -47,9 +47,22 @@ public partial class EditorViewModel : ObservableObject
         _theme = theme;
         _logger = logger;
 
-        foreach (var definition in BuiltInIconCatalog.All)
+        foreach (var iconTheme in BuiltInIconCatalog.Themes)
         {
-            BuiltInIcons.Add(new BuiltInIconOption(definition));
+            var options = BuiltInIconCatalog.All
+                .Where(definition => string.Equals(
+                    definition.ThemeId,
+                    iconTheme.Id,
+                    StringComparison.OrdinalIgnoreCase))
+                .Select(definition => new BuiltInIconOption(definition))
+                .ToList();
+
+            foreach (var option in options)
+            {
+                BuiltInIcons.Add(option);
+            }
+
+            IconThemeGroups.Add(new BuiltInIconThemeGroup(iconTheme, options));
         }
 
         ThemeColorOptions.Add(new GroupThemeOption(
@@ -73,6 +86,8 @@ public partial class EditorViewModel : ObservableObject
     public ObservableCollection<GroupViewModel> Groups { get; } = [];
 
     public ObservableCollection<BuiltInIconOption> BuiltInIcons { get; } = [];
+
+    public ObservableCollection<BuiltInIconThemeGroup> IconThemeGroups { get; } = [];
 
     public ObservableCollection<GroupThemeOption> ThemeColorOptions { get; } = [];
 
@@ -121,9 +136,10 @@ public partial class EditorViewModel : ObservableObject
         foreach (var group in settings.Groups.OrderBy(group => group.Order))
         {
             var viewModel = new GroupViewModel(group);
-            if (!BuiltInIconCatalog.IsBuiltIn(viewModel.IconPath))
+            var normalizedIcon = BuiltInIconCatalog.NormalizeReference(viewModel.IconPath);
+            if (!string.Equals(normalizedIcon, viewModel.IconPath, StringComparison.OrdinalIgnoreCase))
             {
-                viewModel.IconPath = BuiltInIconCatalog.DefaultIconReference;
+                viewModel.IconPath = normalizedIcon;
                 requiresSave = true;
             }
 
@@ -593,9 +609,10 @@ public partial class EditorViewModel : ObservableObject
         foreach (var model in groups)
         {
             var viewModel = new GroupViewModel(model);
-            if (!BuiltInIconCatalog.IsBuiltIn(viewModel.IconPath))
+            var normalizedIcon = BuiltInIconCatalog.NormalizeReference(viewModel.IconPath);
+            if (!string.Equals(normalizedIcon, viewModel.IconPath, StringComparison.OrdinalIgnoreCase))
             {
-                viewModel.IconPath = BuiltInIconCatalog.DefaultIconReference;
+                viewModel.IconPath = normalizedIcon;
             }
 
             AttachGroup(viewModel);
@@ -676,9 +693,7 @@ public partial class EditorViewModel : ObservableObject
 
     private Task LoadGroupIconAsync(GroupViewModel group)
     {
-        var reference = BuiltInIconCatalog.IsBuiltIn(group.IconPath)
-            ? group.IconPath
-            : BuiltInIconCatalog.DefaultIconReference;
+        var reference = BuiltInIconCatalog.NormalizeReference(group.IconPath);
         var definition = BuiltInIconCatalog.Find(reference);
 
         group.IconSource = definition is null
@@ -773,12 +788,12 @@ public partial class EditorViewModel : ObservableObject
 
     private void UpdateValidation()
     {
-        HasMissingIcons = Groups.Count == 0 || Groups.Any(group => !BuiltInIconCatalog.IsBuiltIn(group.IconPath));
+        HasMissingIcons = Groups.Count == 0 || Groups.Any(group => !BuiltInIconCatalog.IsKnown(group.IconPath));
     }
 
     private void ApplyDefaultIcons()
     {
-        foreach (var group in Groups.Where(group => !BuiltInIconCatalog.IsBuiltIn(group.IconPath)))
+        foreach (var group in Groups.Where(group => !BuiltInIconCatalog.IsKnown(group.IconPath)))
         {
             group.IconPath = BuiltInIconCatalog.DefaultIconReference;
         }
@@ -787,7 +802,7 @@ public partial class EditorViewModel : ObservableObject
     private void SyncBuiltInIconSelection()
     {
         var current = SelectedGroup?.IconPath;
-        var selectedReference = BuiltInIconCatalog.IsBuiltIn(current) ? current : null;
+        var selectedReference = BuiltInIconCatalog.IsKnown(current) ? current : null;
 
         foreach (var option in BuiltInIcons)
         {

@@ -75,9 +75,9 @@ dotnet format TaskbarFolders.sln --verify-no-changes
 版本集中於 `Directory.Build.props`：
 
 ```xml
-<Version>1.8.1</Version>
+<Version>1.9.1</Version>
 <AssemblyVersion>1.7.0.0</AssemblyVersion>
-<FileVersion>1.8.1.0</FileVersion>
+<FileVersion>1.9.1.0</FileVersion>
 ```
 
 - `Version`：`主.次.修`，每次功能變更遞增。
@@ -115,7 +115,7 @@ dotnet publish src/TaskbarFolders/TaskbarFolders.csproj `
 ### 7.3 建立 zip
 
 ```powershell
-$version = "1.8.1"
+$version = "1.9.1"
 Compress-Archive -Path publish/win-x64/* -DestinationPath "publish/TaskbarFolders-$version-win-x64.zip" -Force
 Compress-Archive -Path publish/win-arm64/* -DestinationPath "publish/TaskbarFolders-$version-win-arm64.zip" -Force
 ```
@@ -145,20 +145,20 @@ zip 解壓後應包含：
 3. 提交並推送：
    ```powershell
    git add .
-   git commit -m "Release v1.8.1"
+   git commit -m "Release v1.9.1"
    git push origin master
    ```
 4. 建立版本標籤：
    ```powershell
-   git tag v1.8.1
-   git push origin v1.8.1
+   git tag v1.9.1
+   git push origin v1.9.1
    ```
 5. 使用 GitHub CLI 建立 Release 並上傳 zip：
    ```powershell
-   gh release create v1.8.1 `
-     "publish/TaskbarFolders-1.8.1-win-x64.zip" `
-     "publish/TaskbarFolders-1.8.1-win-arm64.zip" `
-     --title "TaskbarFolders 1.8.1" `
+   gh release create v1.9.1 `
+     "publish/TaskbarFolders-1.9.1-win-x64.zip" `
+     "publish/TaskbarFolders-1.9.1-win-arm64.zip" `
+     --title "TaskbarFolders 1.9.1" `
      --notes-file RELEASE_NOTES.md
    ```
 6. 確認 Release 頁面包含兩個架構的 zip，且標記為 Latest。
@@ -169,7 +169,7 @@ zip 解壓後應包含：
 - 提交訊息簡潔描述變更，例如：
   - `Add Traditional Chinese documentation`
   - `Fix flyout placement on secondary monitor`
-  - `Release v1.8.1`
+  - `Release v1.9.1`
 - 不要提交 `bin/`、`obj/`、`.vs/`、`*.user`、`publish/`、記錄檔、快取或任何機密。
 - 不要更動無關檔案。
 

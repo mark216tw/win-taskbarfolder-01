@@ -1,5 +1,64 @@
 # 開發紀錄
 
+## 2026-11-14 - v1.9.1
+
+### 目標
+
+調整內建圖示為 60 個、6 個主題，移除水果與動物並新增軟體；圖示顏色改為隨機分配，選單標題與圖示同列，設定頁儲存按鈕套用分類主題色。
+
+### 變更
+
+- `Helpers/BuiltInIconCatalog.cs`：主題改為工作、開發、影音、生活、遊戲、軟體；移除水果與動物共 20 個圖示，新增軟體主題 10 個圖示；以固定雜湊從色盤隨機分配每個圖示的顏色。
+- `Helpers/BuiltInIconTheme.cs`：移除固定主題色欄位。
+- `Views/EditorWindow.xaml`：圖示選單改為主題標題與 10 個圖示同一列，並調整捲動高度。
+- `Services/ThemeService.cs`：新增 `ApplyAccentTheme`，只覆寫視窗的強調色資源。
+- `Views/SettingsWindow.xaml.cs`：套用目前分類主題色到設定視窗；顯示模式變更時重新套用。
+- `Resources/Strings.resx`：新增軟體主題與 10 個軟體圖示名稱，移除水果與動物字串。
+- `tests/TaskbarFolders.Tests/BuiltInIconCatalogTests.cs`：更新為 60 個圖示、6 個主題，新增顏色多樣性與已移除主題回退測試。
+- `Directory.Build.props`：版本 1.9.1、`FileVersion` 1.9.1.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `README.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`：更新圖示數量、主題、選單配置與設定頁按鈕說明。
+
+### 問題與解法
+
+- 靜態初始化順序導致 `IconColors` 尚未建立就被 `CreateIcons` 使用 → 將色盤宣告移到 `All` 之前。
+- 若使用每次啟動都不同的亂數，編輯器與飛出面板可能顯示不同顏色 → 以圖示 ID 的固定雜湊選色，外觀隨機但跨程序一致。
+
+### 待辦 / 已知限制
+
+- 尚未實機檢視 6 個主題與新選單列在各螢幕解析度下的顯示。
+- 分類主題為「無」時，設定頁儲存按鈕使用全域強調色。
+
+## 2026-11-14 - v1.9.0
+
+### 目標
+
+將內建分類圖示改為 7 個主題、每主題 10 個，共 70 個；圖示選擇面板依主題分區，並讓舊版圖示 ID 平順回退。
+
+### 變更
+
+- `Helpers/BuiltInIconTheme.cs`：新增圖示主題模型（ID、名稱資源鍵、代表色）。
+- `Helpers/BuiltInIconDefinition.cs`：新增 `ThemeId`。
+- `Helpers/BuiltInIconCatalog.cs`：以 70 個新圖示取代舊目錄，分為工作、開發、影音、生活、遊戲、水果、動物；新增 `IsKnown`、`NormalizeReference`，預設圖示改為 `work-folder`。
+- `ViewModels/BuiltInIconThemeGroup.cs`：新增分區顯示用的主題群組。
+- `ViewModels/BuiltInIconOption.cs`、`EditorViewModel.cs`：建立主題分組集合，載入／匯入／儲存改用 `IsKnown` 與 `NormalizeReference` 修復舊設定。
+- `Views/EditorWindow.xaml`：圖示選擇面板改為 7 個主題區塊，每區一列 10 個圖示，加入垂直捲動。
+- `Services/ShortcutService.cs`：產生捷徑前將未知內建圖示正規化為預設圖示。
+- `Resources/Strings.resx`：新增 7 個主題與 70 個圖示名稱，移除舊圖示字串。
+- `tests/TaskbarFolders.Tests/BuiltInIconCatalogTests.cs`：新增 70 個圖示、7 個主題、每主題 10 個、舊 ID 回退與全部渲染測試。
+- `Directory.Build.props`：版本 1.9.0、`FileVersion` 1.9.0.0（`AssemblyVersion` 維持 1.7.0.0）。
+- `README.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`docs/USER_GUIDE.md`、`docs/DESIGN.md`、`docs/ARCHITECTURE.md`：更新圖示數量、主題與範例。
+
+### 問題與解法
+
+- 巢狀 `ItemsControl` 內的按鈕找不到外層 `EditorViewModel` 的指令 → 將 `RelativeSource` 改為 `AncestorLevel=2` 取得外層 `ItemsControl`。
+- 舊版 `builtin:*` 仍符合前綴判斷，但已不在新目錄中，可能導致渲染失敗 → 新增 `IsKnown` 與 `NormalizeReference`，於載入與捷徑產生時回退預設圖示。
+- 70 個新路徑需確認都能被 WPF 解析 → 以 `RendersAllDefinitions` 實際渲染所有圖示驗證。
+
+### 待辦 / 已知限制
+
+- 尚未實機檢視 7 個主題在小螢幕上的彈出面板位置與捲動體驗。
+- 舊設定會在下次載入並儲存後才寫回新圖示 ID。
+
 ## 2026-11-13 - v1.8.6
 
 ### 目標

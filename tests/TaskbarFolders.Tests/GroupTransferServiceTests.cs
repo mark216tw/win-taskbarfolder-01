@@ -34,7 +34,7 @@ public sealed class GroupTransferServiceTests : IDisposable
             {
                 Id = "work",
                 Name = "工作",
-                IconPath = "builtin:work",
+                IconPath = "builtin:work-folder",
                 ThemeColor = "Blue",
                 Order = 0,
                 Items =
@@ -56,7 +56,7 @@ public sealed class GroupTransferServiceTests : IDisposable
         var group = Assert.Single(imported);
         Assert.Equal("work", group.Id);
         Assert.Equal("工作", group.Name);
-        Assert.Equal("builtin:work", group.IconPath);
+        Assert.Equal("builtin:work-folder", group.IconPath);
         Assert.Equal("Blue", group.ThemeColor);
         var item = Assert.Single(group.Items);
         Assert.Equal("Editor", item.Name);

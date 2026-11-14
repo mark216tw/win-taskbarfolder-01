@@ -91,7 +91,7 @@ public sealed class ShortcutServiceTests
 
             var path = await service.CreateShortcutAsync(group);
 
-            Assert.True(File.Exists(Path.Combine(directory, "tools.folder.builtin.ico")));
+            Assert.True(File.Exists(Path.Combine(directory, "tools.work-folder.builtin.ico")));
 
             var oldTimestamp = new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Utc);
             File.SetLastWriteTimeUtc(path, oldTimestamp);

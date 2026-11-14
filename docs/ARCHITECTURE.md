@@ -166,7 +166,7 @@ AppItem
     {
       "Id": "d3f1a0c4b5e6478f9a0b1c2d3e4f5a6b",
       "Name": "開發工具",
-      "IconPath": "builtin:code",
+      "IconPath": "builtin:development-code",
       "ThemeColor": "Blue",
       "Order": 0,
       "Items": [

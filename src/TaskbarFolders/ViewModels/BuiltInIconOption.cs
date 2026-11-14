@@ -12,10 +12,13 @@ public partial class BuiltInIconOption : ObservableObject
     public BuiltInIconOption(BuiltInIconDefinition definition)
     {
         Id = definition.Id;
+        ThemeId = definition.ThemeId;
         Name = Strings.Get(definition.NameResourceKey);
     }
 
     public string Id { get; }
+
+    public string ThemeId { get; }
 
     public string Name { get; }
 

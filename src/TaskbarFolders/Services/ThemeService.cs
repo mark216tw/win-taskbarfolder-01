@@ -59,6 +59,25 @@ public sealed class ThemeService
         SetBrush(window, "SelectionBrush", palette.Selection);
     }
 
+    public void ApplyAccentTheme(Window window, string? themeColor)
+    {
+        var definition = GroupThemeCatalog.Find(themeColor);
+        if (definition is null)
+        {
+            window.Resources.Remove("AccentBrush");
+            window.Resources.Remove("AccentHoverBrush");
+            window.Resources.Remove("AccentPressedBrush");
+            window.Resources.Remove("AccentTextBrush");
+            return;
+        }
+
+        var palette = IsDark ? definition.Dark : definition.Light;
+        SetBrush(window, "AccentBrush", palette.Accent);
+        SetBrush(window, "AccentHoverBrush", palette.AccentHover);
+        SetBrush(window, "AccentPressedBrush", palette.AccentPressed);
+        SetBrush(window, "AccentTextBrush", palette.AccentText);
+    }
+
     private static void SetBrush(Window window, string key, Color color)
     {
         var brush = new SolidColorBrush(color);
