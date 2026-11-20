@@ -17,9 +17,13 @@ namespace Mark.TaskbarFolders.Views;
 
 public partial class EditorWindow : Window
 {
+    private static readonly TimeSpan MinimizedTrimDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan BackgroundTrimDelay = TimeSpan.FromSeconds(30);
+
     private readonly EditorViewModel _viewModel;
     private readonly ThemeService _theme;
     private readonly WindowPlacementService _placements;
+    private readonly MemoryTrimService? _memoryTrim;
     private Point _dragStart;
     private GroupViewModel? _dragCandidate;
     private GroupViewModel? _draggedGroup;
@@ -33,17 +37,41 @@ public partial class EditorWindow : Window
     public EditorWindow(
         EditorViewModel viewModel,
         ThemeService theme,
-        WindowPlacementService placements)
+        WindowPlacementService placements,
+        WindowPlacement? initialPlacement = null,
+        MemoryTrimService? memoryTrim = null)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _theme = theme;
         _placements = placements;
+        _memoryTrim = memoryTrim;
         DataContext = viewModel;
         SourceInitialized += OnSourceInitialized;
+        StateChanged += OnStateChanged;
+        Activated += OnActivated;
+        Deactivated += OnDeactivated;
         Closing += OnClosing;
-        ApplySavedPlacement();
+        ApplySavedPlacement(initialPlacement);
     }
+
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        if (WindowState == WindowState.Minimized)
+        {
+            _memoryTrim?.ScheduleTrim(MinimizedTrimDelay);
+        }
+        else
+        {
+            _memoryTrim?.CancelPendingTrim();
+        }
+    }
+
+    private void OnActivated(object? sender, EventArgs e) =>
+        _memoryTrim?.CancelPendingTrim();
+
+    private void OnDeactivated(object? sender, EventArgs e) =>
+        _memoryTrim?.ScheduleTrim(BackgroundTrimDelay);
 
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
@@ -120,9 +148,9 @@ public partial class EditorWindow : Window
         }
     }
 
-    private void ApplySavedPlacement()
+    private void ApplySavedPlacement(WindowPlacement? preloaded)
     {
-        var placement = _placements.Load();
+        var placement = preloaded ?? _placements.Load();
         if (placement is null)
         {
             return;

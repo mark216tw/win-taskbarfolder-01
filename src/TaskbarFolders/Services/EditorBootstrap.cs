@@ -11,7 +11,7 @@ public sealed class EditorBootstrap : IDisposable
     private ServiceProvider? _services;
     private Mutex? _editorMutex;
     private EventWaitHandle? _editorActivateEvent;
-    private Thread? _activationThread;
+    private RegisteredWaitHandle? _activationWaitHandle;
     private FlyoutIpcServer? _flyoutServer;
 
     public bool EnsureSingleInstance()
@@ -26,12 +26,12 @@ public sealed class EditorBootstrap : IDisposable
 
             if (createdNew)
             {
-                _activationThread = new Thread(WaitForActivationRequests)
-                {
-                    IsBackground = true,
-                    Name = "TaskbarFolders.EditorActivation"
-                };
-                _activationThread.Start();
+                _activationWaitHandle = ThreadPool.RegisterWaitForSingleObject(
+                    _editorActivateEvent,
+                    OnActivationSignaled,
+                    state: null,
+                    millisecondsTimeOutInterval: Timeout.Infinite,
+                    executeOnlyOnce: false);
                 return true;
             }
 
@@ -95,6 +95,9 @@ public sealed class EditorBootstrap : IDisposable
             _services = null;
         }
 
+        _activationWaitHandle?.Unregister(null);
+        _activationWaitHandle = null;
+
         _editorActivateEvent?.Dispose();
         _editorActivateEvent = null;
 
@@ -114,36 +117,20 @@ public sealed class EditorBootstrap : IDisposable
         }
     }
 
-    private void WaitForActivationRequests()
+    private static void OnActivationSignaled(object? state, bool timedOut)
     {
-        var handle = _editorActivateEvent;
-        if (handle is null)
+        if (timedOut)
         {
             return;
         }
 
-        while (true)
+        try
         {
-            try
-            {
-                if (!handle.WaitOne())
-                {
-                    return;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-
-            try
-            {
-                Application.Current?.Dispatcher.BeginInvoke(() => ActivateEditorWindow());
-            }
-            catch (Exception)
-            {
-                return;
-            }
+            Application.Current?.Dispatcher.BeginInvoke(ActivateEditorWindow);
+        }
+        catch (Exception)
+        {
+            // Application may be shutting down.
         }
     }
 
@@ -190,6 +177,16 @@ public sealed class EditorBootstrap : IDisposable
         services.AddSingleton<ThemeService>();
         services.AddSingleton<WindowPlacementService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton(sp =>
+        {
+            var trim = new MemoryTrimService();
+            var icons = sp.GetRequiredService<IconService>();
+            var discovery = sp.GetRequiredService<DiscoveryService>();
+            trim.RegisterCallback(icons.ClearMemoryCache);
+            trim.RegisterCallback(discovery.Invalidate);
+            trim.RegisterCallback(BuiltInIconCatalog.ClearCaches);
+            return trim;
+        });
         services.AddSingleton<StartupCoordinator>();
         services.AddSingleton(sp => FlyoutLauncher.CreateForHost(
             sp.GetRequiredService<ConfigService>(),
@@ -197,7 +194,8 @@ public sealed class EditorBootstrap : IDisposable
             sp.GetRequiredService<LaunchService>(),
             sp.GetRequiredService<ThemeService>(),
             sp.GetRequiredService<TaskbarGeometryService>(),
-            sp.GetRequiredService<ILoggerFactory>()));
+            sp.GetRequiredService<ILoggerFactory>(),
+            sp.GetRequiredService<MemoryTrimService>()));
 
         return services.BuildServiceProvider();
     }

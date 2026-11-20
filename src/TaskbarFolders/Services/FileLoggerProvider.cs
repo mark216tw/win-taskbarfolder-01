@@ -11,21 +11,11 @@ public sealed class FileLoggerProvider : ILoggerProvider
     private readonly string _path;
     private readonly object _sync = new();
     private long _size;
+    private bool _initialized;
 
     public FileLoggerProvider(string path)
     {
         _path = path;
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-        lock (_sync)
-        {
-            _size = File.Exists(_path) ? new FileInfo(_path).Length : 0;
-            if (_size > MaxLogBytes)
-            {
-                RotateIfNeeded();
-                _size = 0;
-            }
-        }
     }
 
     public ILogger CreateLogger(string categoryName) => new FileLogger(this, categoryName);
@@ -34,12 +24,35 @@ public sealed class FileLoggerProvider : ILoggerProvider
     {
     }
 
+    private void EnsureInitialized()
+    {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+        var directory = Path.GetDirectoryName(_path);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        _size = File.Exists(_path) ? new FileInfo(_path).Length : 0;
+        if (_size > MaxLogBytes)
+        {
+            RotateIfNeeded();
+            _size = 0;
+        }
+    }
+
     private void Write(string line)
     {
         lock (_sync)
         {
             try
             {
+                EnsureInitialized();
                 var payload = line + Environment.NewLine;
                 var length = Encoding.UTF8.GetByteCount(payload);
                 if (_size + length > MaxLogBytes)

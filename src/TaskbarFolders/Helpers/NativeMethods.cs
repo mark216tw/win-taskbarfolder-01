@@ -141,6 +141,17 @@ internal static class NativeMethods
     [DllImport("kernel32.dll", ExactSpelling = true)]
     internal static extern uint GetCurrentThreadId();
 
+    [DllImport("kernel32.dll", ExactSpelling = true)]
+    internal static extern IntPtr GetCurrentProcess();
+
+    [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetProcessWorkingSetSizeEx(
+        IntPtr hProcess,
+        nint dwMinimumWorkingSetSize,
+        nint dwMaximumWorkingSetSize,
+        uint flags);
+
     [DllImport("user32.dll", ExactSpelling = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool DestroyIcon(IntPtr hIcon);

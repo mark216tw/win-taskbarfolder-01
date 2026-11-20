@@ -27,6 +27,9 @@ public partial class EditorViewModel : ObservableObject
     private AppSettings _settings = new();
     private bool _suppressTheme;
     private bool _transferring;
+    private bool _initialized;
+    private bool _builtInIconsLoaded;
+    private bool _themeOptionsLoaded;
 
     public EditorViewModel(
         ConfigService config,
@@ -46,38 +49,6 @@ public partial class EditorViewModel : ObservableObject
         _dialogs = dialogs;
         _theme = theme;
         _logger = logger;
-
-        foreach (var iconTheme in BuiltInIconCatalog.Themes)
-        {
-            var options = BuiltInIconCatalog.All
-                .Where(definition => string.Equals(
-                    definition.ThemeId,
-                    iconTheme.Id,
-                    StringComparison.OrdinalIgnoreCase))
-                .Select(definition => new BuiltInIconOption(definition))
-                .ToList();
-
-            foreach (var option in options)
-            {
-                BuiltInIcons.Add(option);
-            }
-
-            IconThemeGroups.Add(new BuiltInIconThemeGroup(iconTheme, options));
-        }
-
-        ThemeColorOptions.Add(new GroupThemeOption(
-            GroupThemeCatalog.NoneId,
-            Strings.Get("ThemeColorNone"),
-            null,
-            isNone: true));
-
-        foreach (var definition in GroupThemeCatalog.All)
-        {
-            ThemeColorOptions.Add(new GroupThemeOption(
-                definition.Id,
-                Strings.Get(definition.NameResourceKey),
-                GroupThemeCatalog.CreateSwatch(definition.Id)));
-        }
 
         _statusTimer = new DispatcherTimer();
         _statusTimer.Tick += OnStatusTimerTick;
@@ -174,6 +145,7 @@ public partial class EditorViewModel : ObservableObject
         UpdateValidation();
         SyncBuiltInIconSelection();
         SyncThemeSelection();
+        _initialized = true;
         return Task.CompletedTask;
     }
 
@@ -216,13 +188,80 @@ public partial class EditorViewModel : ObservableObject
         IsThemePickerOpen = false;
         SyncBuiltInIconSelection();
         SyncThemeSelection();
+
+        if (_initialized && value is not null)
+        {
+            _ = LoadGroupAndItemsIconsAsync(value);
+        }
     }
 
     [RelayCommand]
-    private void OpenIconPicker() => IsIconPickerOpen = true;
+    private void OpenIconPicker()
+    {
+        EnsureBuiltInIconsLoaded();
+        IsIconPickerOpen = true;
+    }
 
     [RelayCommand]
-    private void OpenThemePicker() => IsThemePickerOpen = true;
+    private void OpenThemePicker()
+    {
+        EnsureThemeColorOptionsLoaded();
+        IsThemePickerOpen = true;
+    }
+
+    private void EnsureBuiltInIconsLoaded()
+    {
+        if (_builtInIconsLoaded)
+        {
+            return;
+        }
+
+        _builtInIconsLoaded = true;
+        foreach (var iconTheme in BuiltInIconCatalog.Themes)
+        {
+            var options = BuiltInIconCatalog.All
+                .Where(definition => string.Equals(
+                    definition.ThemeId,
+                    iconTheme.Id,
+                    StringComparison.OrdinalIgnoreCase))
+                .Select(definition => new BuiltInIconOption(definition))
+                .ToList();
+
+            foreach (var option in options)
+            {
+                BuiltInIcons.Add(option);
+            }
+
+            IconThemeGroups.Add(new BuiltInIconThemeGroup(iconTheme, options));
+        }
+
+        SyncBuiltInIconSelection();
+    }
+
+    private void EnsureThemeColorOptionsLoaded()
+    {
+        if (_themeOptionsLoaded)
+        {
+            return;
+        }
+
+        _themeOptionsLoaded = true;
+        ThemeColorOptions.Add(new GroupThemeOption(
+            GroupThemeCatalog.NoneId,
+            Strings.Get("ThemeColorNone"),
+            null,
+            isNone: true));
+
+        foreach (var definition in GroupThemeCatalog.All)
+        {
+            ThemeColorOptions.Add(new GroupThemeOption(
+                definition.Id,
+                Strings.Get(definition.NameResourceKey),
+                GroupThemeCatalog.CreateSwatch(definition.Id)));
+        }
+
+        SyncThemeSelection();
+    }
 
     [RelayCommand]
     private void SelectThemeColor(GroupThemeOption? option)
@@ -705,18 +744,45 @@ public partial class EditorViewModel : ObservableObject
         SelectedItem = SelectedGroup.Items[target];
     }
 
-    public async Task LoadAllIconsAsync()
+    public Task LoadAllIconsAsync() => LoadSelectedGroupIconsAsync();
+
+    public Task LoadSelectedGroupIconsAsync()
+    {
+        var group = SelectedGroup;
+        return group is null ? Task.CompletedTask : LoadGroupAndItemsIconsAsync(group);
+    }
+
+    public void ReleaseInactiveGroupIcons()
     {
         foreach (var group in Groups)
+        {
+            if (ReferenceEquals(group, SelectedGroup))
+            {
+                continue;
+            }
+
+            group.IconSource = null;
+            foreach (var item in group.Items)
+            {
+                item.IconSource = null;
+            }
+        }
+    }
+
+    private async Task LoadGroupAndItemsIconsAsync(GroupViewModel group)
+    {
+        if (group.IconSource is null)
         {
             await LoadGroupIconAsync(group);
         }
 
-        var items = Groups
-            .OrderByDescending(group => ReferenceEquals(group, SelectedGroup))
-            .SelectMany(group => group.Items)
-            .ToList();
-        await Task.WhenAll(items.Select(LoadItemIconAsync));
+        var pending = group.Items.Where(item => item.IconSource is null).ToList();
+        if (pending.Count == 0)
+        {
+            return;
+        }
+
+        await Task.WhenAll(pending.Select(LoadItemIconAsync));
     }
 
     private Task LoadGroupIconAsync(GroupViewModel group)
@@ -726,7 +792,7 @@ public partial class EditorViewModel : ObservableObject
 
         group.IconSource = definition is null
             ? null
-            : BuiltInIconCatalog.CreateImage(definition.Id);
+            : BuiltInIconCatalog.CreatePreviewImage(definition.Id);
         return Task.CompletedTask;
     }
 
@@ -835,6 +901,11 @@ public partial class EditorViewModel : ObservableObject
 
     private void SyncBuiltInIconSelection()
     {
+        if (!_builtInIconsLoaded)
+        {
+            return;
+        }
+
         var current = SelectedGroup?.IconPath;
         var selectedReference = BuiltInIconCatalog.IsKnown(current) ? current : null;
 
@@ -849,6 +920,11 @@ public partial class EditorViewModel : ObservableObject
 
     private void SyncThemeSelection()
     {
+        if (!_themeOptionsLoaded)
+        {
+            return;
+        }
+
         var current = GroupThemeCatalog.Normalize(SelectedGroup?.ThemeColor);
 
         foreach (var option in ThemeColorOptions)

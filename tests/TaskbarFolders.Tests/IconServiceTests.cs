@@ -56,4 +56,14 @@ public sealed class IconServiceTests : IDisposable
         Assert.Equal(1, IconService.PruneDefaultCache(_root, now.AddHours(25)));
         Assert.False(File.Exists(second));
     }
+
+    [Theory]
+    [InlineData(16, 48)]
+    [InlineData(32, 64)]
+    [InlineData(40, 80)]
+    [InlineData(128, 96)]
+    public void GetMaxPixelSize_ClampsToExpectedRange(int requestedSize, int expected)
+    {
+        Assert.Equal(expected, IconService.GetMaxPixelSize(requestedSize));
+    }
 }

@@ -16,6 +16,7 @@ public static class BuiltInIconCatalog
     public static Color DefaultBackground { get; } = Color.FromRgb(0x4B, 0x55, 0x63);
 
     private const int BitmapSize = 256;
+    public const int PreviewBitmapSize = 64;
     private const double GlyphExtent = 150;
     private const double StrokeWidth = 14;
 
@@ -23,6 +24,9 @@ public static class BuiltInIconCatalog
         new(StringComparer.OrdinalIgnoreCase);
 
     private static readonly ConcurrentDictionary<string, BitmapSource> ImageCache =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private static readonly ConcurrentDictionary<string, BitmapSource> PreviewImageCache =
         new(StringComparer.OrdinalIgnoreCase);
 
     public static IReadOnlyList<BuiltInIconTheme> Themes { get; } =
@@ -74,15 +78,36 @@ public static class BuiltInIconCatalog
 
         var color = background ?? DefaultBackground;
         var key = $"{definition.Id}|{color.R:X2}{color.G:X2}{color.B:X2}";
-        return ImageCache.GetOrAdd(key, _ => Render(definition, color));
+        return ImageCache.GetOrAdd(key, _ => Render(definition, color, BitmapSize));
+    }
+
+    public static BitmapSource? CreatePreviewImage(
+        string? iconId,
+        Color? background = null,
+        int pixelSize = PreviewBitmapSize)
+    {
+        if (string.IsNullOrWhiteSpace(iconId) || !Index.TryGetValue(iconId, out var definition))
+        {
+            return null;
+        }
+
+        var clampedSize = Math.Clamp(pixelSize, 16, BitmapSize);
+        var color = background ?? DefaultBackground;
+        var key = $"{definition.Id}|{color.R:X2}{color.G:X2}{color.B:X2}|{clampedSize}";
+        return PreviewImageCache.GetOrAdd(key, _ => Render(definition, color, clampedSize));
+    }
+
+    public static void ClearCaches()
+    {
+        ImageCache.Clear();
+        PreviewImageCache.Clear();
     }
 
     public static void SaveIco(string iconReference, string destinationPath, Color? background = null)
     {
         var definition = Find(iconReference)
             ?? throw new ArgumentException("Unknown built-in icon.", nameof(iconReference));
-        var image = CreateImage(definition.Id, background)
-            ?? throw new InvalidOperationException("Unable to render built-in icon.");
+        var image = Render(definition, background ?? DefaultBackground, BitmapSize);
 
         IcoWriter.Write(image, destinationPath);
     }
@@ -202,8 +227,13 @@ public static class BuiltInIconCatalog
             return geometry;
         });
 
-    private static BitmapSource Render(BuiltInIconDefinition definition, Color background)
+    private static BitmapSource Render(BuiltInIconDefinition definition, Color background, int bitmapSize)
     {
+        var ratio = bitmapSize / (double)BitmapSize;
+        var cornerRadius = 56 * ratio;
+        var glyphExtent = GlyphExtent * ratio;
+        var strokeWidth = StrokeWidth * ratio;
+
         var visual = new DrawingVisual();
         using (var context = visual.RenderOpen())
         {
@@ -212,15 +242,15 @@ public static class BuiltInIconCatalog
             context.DrawRoundedRectangle(
                 backgroundBrush,
                 null,
-                new Rect(0, 0, BitmapSize, BitmapSize),
-                56,
-                56);
+                new Rect(0, 0, bitmapSize, bitmapSize),
+                cornerRadius,
+                cornerRadius);
 
             var geometry = GetGeometry(definition);
             var bounds = geometry.Bounds;
-            var scale = GlyphExtent / Math.Max(bounds.Width, bounds.Height);
+            var scale = glyphExtent / Math.Max(bounds.Width, bounds.Height);
 
-            var pen = new Pen(Brushes.White, StrokeWidth / scale)
+            var pen = new Pen(Brushes.White, strokeWidth / scale)
             {
                 StartLineCap = PenLineCap.Round,
                 EndLineCap = PenLineCap.Round,
@@ -234,15 +264,15 @@ public static class BuiltInIconCatalog
                 {
                     new ScaleTransform(scale, scale),
                     new TranslateTransform(
-                        ((BitmapSize - (bounds.Width * scale)) / 2) - (bounds.X * scale),
-                        ((BitmapSize - (bounds.Height * scale)) / 2) - (bounds.Y * scale))
+                        ((bitmapSize - (bounds.Width * scale)) / 2) - (bounds.X * scale),
+                        ((bitmapSize - (bounds.Height * scale)) / 2) - (bounds.Y * scale))
                 }
             });
             context.DrawGeometry(null, pen, geometry);
             context.Pop();
         }
 
-        var bitmap = new RenderTargetBitmap(BitmapSize, BitmapSize, 96, 96, PixelFormats.Pbgra32);
+        var bitmap = new RenderTargetBitmap(bitmapSize, bitmapSize, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(visual);
         bitmap.Freeze();
         return bitmap;

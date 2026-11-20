@@ -9,6 +9,7 @@ namespace Mark.TaskbarFolders.Services;
 public sealed class FlyoutLauncher : IDisposable
 {
     private const int DebounceMilliseconds = 500;
+    private static readonly TimeSpan PostCloseTrimDelay = TimeSpan.FromSeconds(15);
 
     private readonly StaExecutor? _ownedSta;
     private readonly LoggerFactory? _ownedLoggerFactory;
@@ -18,6 +19,7 @@ public sealed class FlyoutLauncher : IDisposable
     private readonly ThemeService _theme;
     private readonly TaskbarGeometryService _geometry;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly MemoryTrimService? _memoryTrim;
 
     private Window? _currentWindow;
     private string? _currentGroupId;
@@ -46,7 +48,8 @@ public sealed class FlyoutLauncher : IDisposable
         LaunchService launch,
         ThemeService theme,
         TaskbarGeometryService geometry,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        MemoryTrimService? memoryTrim)
     {
         _config = config;
         _icon = icon;
@@ -54,6 +57,7 @@ public sealed class FlyoutLauncher : IDisposable
         _theme = theme;
         _geometry = geometry;
         _loggerFactory = loggerFactory;
+        _memoryTrim = memoryTrim;
     }
 
     public static FlyoutLauncher CreateForHost(
@@ -62,8 +66,9 @@ public sealed class FlyoutLauncher : IDisposable
         LaunchService launch,
         ThemeService theme,
         TaskbarGeometryService geometry,
-        ILoggerFactory loggerFactory) =>
-        new(config, icon, launch, theme, geometry, loggerFactory);
+        ILoggerFactory loggerFactory,
+        MemoryTrimService? memoryTrim = null) =>
+        new(config, icon, launch, theme, geometry, loggerFactory, memoryTrim);
 
     public bool Show(string groupId, bool showErrorDialog = true, bool applyTheme = true)
     {
@@ -72,6 +77,8 @@ public sealed class FlyoutLauncher : IDisposable
         {
             return dispatcher.Invoke(() => Show(groupId, showErrorDialog, applyTheme));
         }
+
+        _memoryTrim?.CancelPendingTrim();
 
         var settings = _config.Load();
         var group = settings.Groups.FirstOrDefault(
@@ -124,6 +131,8 @@ public sealed class FlyoutLauncher : IDisposable
                 _currentWindow = null;
                 _currentGroupId = null;
             }
+
+            _memoryTrim?.ScheduleTrim(PostCloseTrimDelay);
         };
 
         _currentWindow = window;

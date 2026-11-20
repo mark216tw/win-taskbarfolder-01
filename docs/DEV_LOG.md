@@ -1,5 +1,34 @@
 # 開發紀錄
 
+## 2026-11-20 - v1.12.2
+
+### 目標
+
+提高應用程式啟動速度，並降低常駐背景時的電腦記憶體使用量。
+
+### 變更
+
+- `Program.cs`、`Services/AppPaths.cs`：啟用 .NET Multicore JIT（`ProfileOptimization`），為編輯器與飛出面板分別建立 JIT 設定檔以加速後續冷啟動。
+- `TaskbarFolders.csproj`：明確設定 Workstation GC、停用 `RetainVMGarbageCollection` 並啟用 `TieredPGO`，讓釋放的記憶體頁能歸還作業系統。
+- `Services/FileLoggerProvider.cs`、`Services/ConfigService.cs`、`Services/IconService.cs`、`Services/ShortcutService.cs`：移除建構函式中的同步磁碟 I/O（目錄建立與記錄檔輪替檢查延後至首次寫入）。
+- `Services/StartupCoordinator.cs`、`Views/EditorWindow.xaml.cs`：並行非同步載入 `config.json` 與 `window.json`，避免視窗建構時在 UI 執行緒同步讀檔。
+- `ViewModels/EditorViewModel.cs`：延遲建立內建圖示與分類主題選單集合（首次開啟選單才建立）；啟動時僅載入目前選取分類的圖示，其餘分類切換時才載入。
+- `Helpers/BuiltInIconCatalog.cs`、`ViewModels/BuiltInIconOption.cs`：新增 `CreatePreviewImage`（64×64 預覽圖，較原本 256×256 節省約 16 倍像素記憶體），`SaveIco` 改為即時繪製 256×256 而不常駐快取；新增 `ClearCaches`。
+- `Services/IconService.cs`：過大的 Shell 圖示與既有磁碟快取 PNG 依顯示尺寸上限（48–96 px）縮放／解碼；新增 `ClearMemoryCache`。
+- `Services/EditorBootstrap.cs`、`Services/FlyoutIpc.cs`：單一實例喚醒改用 `ThreadPool.RegisterWaitForSingleObject`（省去常駐執行緒）；IPC 監聽實例由 4 降為 2 並直接以非同步 I/O 啟動。
+- `Services/MemoryTrimService.cs`、`Helpers/NativeMethods.cs`、`Services/FlyoutLauncher.cs`、`Views/FlyoutWindow.xaml.cs`：新增常駐記憶體整理服務，於視窗最小化（2 秒）、飛出面板關閉（15 秒）或視窗退至背景（30 秒）時清除暫存快取、釋放非選取分類圖示、執行壓縮 GC 並以 `SetProcessWorkingSetSizeEx` 裁減工作集；飛出面板關閉時解除事件與 `DataContext`。
+- `tests/TaskbarFolders.Tests/`：新增 `MemoryTrimServiceTests`、內建圖示 64×64 預覽與快取清除測試、圖示解碼上限測試。
+- `Directory.Build.props`：版本 1.12.2、`FileVersion` 1.12.2.0（`AssemblyVersion` 維持 1.7.0.0）。
+
+### 問題與解法
+
+- `BuiltInIconCatalogTests` 驗證 `CreateImage` 回傳 256×256 影像 → 保留 `CreateImage` 原行為，另提供 `CreatePreviewImage` 給 UI 預覽使用。
+- 避免對小圖示進行放大失真 → `IconService.TryLoadFromDisk` 先讀取 PNG IHDR 寬高，僅在原圖大於目標像素上限時設定 `DecodePixelWidth`。
+
+### 待辦 / 已知限制
+
+- 尚未於實機工作管理員量測長時間常駐後的實際工作集曲線與各 DPI 下縮放圖示清晰度。
+
 ## 2026-11-14 - v1.12.1
 
 ### 目標

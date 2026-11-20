@@ -15,7 +15,6 @@ public sealed class ConfigService
     {
         RootDirectory = rootDirectory ?? AppPaths.Root;
         _logger = logger;
-        Directory.CreateDirectory(RootDirectory);
         _configFile = Path.Combine(RootDirectory, "config.json");
     }
 

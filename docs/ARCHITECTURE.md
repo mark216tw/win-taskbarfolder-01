@@ -292,9 +292,13 @@ yyyy-MM-dd HH:mm:ss.fff [Level] Category: Message
 
 ## 10. 效能策略
 
-- 飛出面板模式不載入 Hosting 與編輯器服務。
-- 視窗先顯示，圖示在背景載入。
-- 內建圖示延遲渲染，第一次開啟選單才建立 `BitmapSource`。
+- 啟動前啟用 Multicore JIT（`ProfileOptimization`），編輯器與飛出面板分開記錄設定檔。
+- 飛出面板模式不載入 Hosting 與編輯器服務；設定檔、記錄檔與圖示目錄建立延後至實際寫入時。
+- 編輯器啟動並行載入 `config.json` 與 `window.json`，視窗先顯示，並只載入目前選取分類的圖示。
+- 內建圖示與主題選單延遲建立；內建圖示預覽使用 64×64 精簡尺寸，僅在輸出 `.ico` 時繪製 256×256。
+- 應用程式圖示依顯示尺寸上限（48–96 px）縮放與解碼，避免快取過大點陣圖。
+- 單一實例喚醒使用 `ThreadPool.RegisterWaitForSingleObject`，不額外占用常駐背景執行緒。
+- 視窗最小化、背景閒置或飛出面板關閉後，由 `MemoryTrimService` 自動清除暫存快取、執行壓縮 GC 並呼叫 `SetProcessWorkingSetSizeEx` 裁減工作集；停用 `RetainVMGarbageCollection` 讓記憶體能歸還作業系統。
 - 開始功能表掃描結果快取 60 秒。
 - 捷徑增量重建，避免每次儲存重寫全部檔案。
 - Release + RuntimeIdentifier 啟用 ReadyToRun，改善冷啟動。

@@ -94,6 +94,33 @@ public sealed class BuiltInIconCatalogTests
     }
 
     [Fact]
+    public async Task CreatePreviewImage_RendersCompactBitmap()
+    {
+        using var sta = new StaExecutor();
+
+        var preview = await sta.InvokeAsync(() => BuiltInIconCatalog.CreatePreviewImage("work-folder"));
+
+        Assert.NotNull(preview);
+        Assert.Equal(BuiltInIconCatalog.PreviewBitmapSize, preview!.PixelWidth);
+        Assert.Equal(BuiltInIconCatalog.PreviewBitmapSize, preview.PixelHeight);
+        Assert.True(HasWhiteGlyph(preview));
+    }
+
+    [Fact]
+    public async Task ClearCaches_AllowsFreshRender()
+    {
+        using var sta = new StaExecutor();
+
+        var first = await sta.InvokeAsync(() => BuiltInIconCatalog.CreatePreviewImage("work-folder"));
+        BuiltInIconCatalog.ClearCaches();
+        var second = await sta.InvokeAsync(() => BuiltInIconCatalog.CreatePreviewImage("work-folder"));
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.NotSame(first, second);
+    }
+
+    [Fact]
     public void All_HaveUniqueIds()
     {
         var distinct = BuiltInIconCatalog.All

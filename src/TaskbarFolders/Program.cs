@@ -1,3 +1,5 @@
+using System.IO;
+using System.Runtime;
 using System.Windows;
 using Mark.TaskbarFolders.Helpers;
 using Mark.TaskbarFolders.Services;
@@ -25,8 +27,25 @@ public static class Program
             }
         }
 
+        EnableMulticoreJit(groupId is null ? "editor.profile" : "flyout.profile");
+
         var app = new App();
         app.InitializeComponent();
         return app.Run();
+    }
+
+    private static void EnableMulticoreJit(string profileName)
+    {
+        try
+        {
+            var directory = AppPaths.ProfileDirectory;
+            Directory.CreateDirectory(directory);
+            ProfileOptimization.SetProfileRoot(directory);
+            ProfileOptimization.StartProfile(profileName);
+        }
+        catch
+        {
+            // Multicore JIT profiling is best effort.
+        }
     }
 }

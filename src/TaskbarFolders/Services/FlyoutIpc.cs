@@ -78,7 +78,7 @@ public static class FlyoutIpc
 
 public sealed class FlyoutIpcServer : IDisposable
 {
-    private const int MaxInstances = 4;
+    private const int MaxInstances = 2;
 
     private const int BufferSize = 1024;
 
@@ -102,7 +102,7 @@ public sealed class FlyoutIpcServer : IDisposable
     public void Start()
     {
         _listeners ??= Task.WhenAll(
-            Enumerable.Range(0, MaxInstances).Select(_ => Task.Run(() => ListenAsync(_cts.Token))));
+            Enumerable.Range(0, MaxInstances).Select(_ => ListenAsync(_cts.Token)));
     }
 
     private async Task ListenAsync(CancellationToken cancellationToken)

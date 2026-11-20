@@ -34,27 +34,39 @@ public partial class FlyoutWindow : Window
         Width = 500;
         Height = CalculateHeight(viewModel.Items.Count);
 
-        _viewModel.CloseRequested += (_, _) => Close();
-        _viewModel.LaunchFailed += (_, message) =>
-        {
-            _suppressDeactivate = true;
-            try
-            {
-                MessageBox.Show(
-                    this,
-                    message,
-                    Mark.TaskbarFolders.Resources.Strings.Get("ErrorTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-            finally
-            {
-                _suppressDeactivate = false;
-            }
-        };
+        _viewModel.CloseRequested += OnCloseRequested;
+        _viewModel.LaunchFailed += OnLaunchFailed;
 
         SourceInitialized += OnSourceInitialized;
         ContentRendered += OnContentRendered;
+        Closed += OnClosed;
+    }
+
+    private void OnCloseRequested(object? sender, EventArgs e) => Close();
+
+    private void OnLaunchFailed(object? sender, string message)
+    {
+        _suppressDeactivate = true;
+        try
+        {
+            MessageBox.Show(
+                this,
+                message,
+                Mark.TaskbarFolders.Resources.Strings.Get("ErrorTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            _suppressDeactivate = false;
+        }
+    }
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        _viewModel.CloseRequested -= OnCloseRequested;
+        _viewModel.LaunchFailed -= OnLaunchFailed;
+        DataContext = null;
     }
 
     private double CalculateHeight(int itemCount)

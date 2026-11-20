@@ -1,9 +1,11 @@
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Mark.TaskbarFolders.Helpers;
 using Mark.TaskbarFolders.Models;
@@ -30,8 +32,9 @@ public sealed class IconService
         _sta = sta;
         _logger = logger;
         _cacheDirectory = cacheDirectory ?? AppPaths.IconCacheDirectory;
-        Directory.CreateDirectory(_cacheDirectory);
     }
+
+    public void ClearMemoryCache() => _memoryCache.Clear();
 
     public static int PruneDefaultCache() =>
         PruneDefaultCache(AppPaths.IconCacheDirectory, DateTime.UtcNow);
@@ -71,7 +74,7 @@ public sealed class IconService
         var fromDisk = await Task.Run(() =>
         {
             var cacheKey = BuildKey(item, size);
-            return (Key: cacheKey, Icon: TryLoadFromDisk(GetCachePath(cacheKey)));
+            return (Key: cacheKey, Icon: TryLoadFromDisk(GetCachePath(cacheKey), GetMaxPixelSize(size)));
         }).ConfigureAwait(false);
 
         if (fromDisk.Icon is not null)
@@ -124,6 +127,7 @@ public sealed class IconService
             var icon = LoadIcon(item, size);
             if (icon is not null)
             {
+                icon = DownscaleIfOversized(icon, GetMaxPixelSize(size));
                 TrySaveToDisk(icon, GetCachePath(key));
             }
 
@@ -288,7 +292,27 @@ public sealed class IconService
         return Path.Combine(_cacheDirectory, hash[..40] + ".png");
     }
 
-    private static BitmapSource? TryLoadFromDisk(string path)
+    internal static int GetMaxPixelSize(int requestedSize) =>
+        Math.Clamp(requestedSize * 2, 48, 96);
+
+    private static BitmapSource DownscaleIfOversized(BitmapSource source, int maxPixelSize)
+    {
+        var largestDimension = Math.Max(source.PixelWidth, source.PixelHeight);
+        if (largestDimension <= maxPixelSize || largestDimension <= 0)
+        {
+            return source;
+        }
+
+        var scale = maxPixelSize / (double)largestDimension;
+        var transform = new ScaleTransform(scale, scale);
+        transform.Freeze();
+
+        var scaled = new TransformedBitmap(source, transform);
+        scaled.Freeze();
+        return scaled;
+    }
+
+    private static BitmapSource? TryLoadFromDisk(string path, int maxPixelSize)
     {
         if (!File.Exists(path))
         {
@@ -298,9 +322,17 @@ public sealed class IconService
         try
         {
             using var stream = File.OpenRead(path);
+            var decodeWidth = ShouldDownscalePng(stream, maxPixelSize) ? maxPixelSize : 0;
+            stream.Position = 0;
+
             var image = new BitmapImage();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
+            if (decodeWidth > 0)
+            {
+                image.DecodePixelWidth = decodeWidth;
+            }
+
             image.StreamSource = stream;
             image.EndInit();
             image.Freeze();
@@ -312,10 +344,30 @@ public sealed class IconService
         }
     }
 
-    private static void TrySaveToDisk(BitmapSource source, string path)
+    private static bool ShouldDownscalePng(Stream stream, int maxPixelSize)
+    {
+        Span<byte> header = stackalloc byte[24];
+        if (stream.Read(header) < 24)
+        {
+            return false;
+        }
+
+        // PNG signature + IHDR chunk starts with width/height at offsets 16 and 20 (big-endian).
+        if (header[0] != 0x89 || header[1] != 0x50 || header[2] != 0x4E || header[3] != 0x47)
+        {
+            return false;
+        }
+
+        var width = BinaryPrimitives.ReadInt32BigEndian(header[16..20]);
+        var height = BinaryPrimitives.ReadInt32BigEndian(header[20..24]);
+        return width > maxPixelSize || height > maxPixelSize;
+    }
+
+    private void TrySaveToDisk(BitmapSource source, string path)
     {
         try
         {
+            Directory.CreateDirectory(_cacheDirectory);
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(source));
             using var stream = File.Create(path);

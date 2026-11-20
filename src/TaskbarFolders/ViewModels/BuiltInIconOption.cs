@@ -22,7 +22,7 @@ public partial class BuiltInIconOption : ObservableObject
 
     public string Name { get; }
 
-    public ImageSource? ImageSource => _imageSource ??= BuiltInIconCatalog.CreateImage(Id);
+    public ImageSource? ImageSource => _imageSource ??= BuiltInIconCatalog.CreatePreviewImage(Id);
 
     [ObservableProperty]
     private bool isSelected;

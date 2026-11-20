@@ -20,6 +20,9 @@ public static class AppPaths
     public static string IconCacheDirectory =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TaskbarFolders", "IconCache");
 
+    public static string ProfileDirectory =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TaskbarFolders", "Profiles");
+
     public static void EnsureDirectories()
     {
         Directory.CreateDirectory(Root);

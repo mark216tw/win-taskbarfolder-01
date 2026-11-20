@@ -25,7 +25,6 @@ public sealed class ShortcutService
         _sta = sta;
         _logger = logger;
         _shortcutsDirectory = shortcutsDirectory ?? AppPaths.ShortcutsDirectory;
-        Directory.CreateDirectory(_shortcutsDirectory);
     }
 
     public string ShortcutsDirectory => _shortcutsDirectory;
@@ -104,6 +103,7 @@ public sealed class ShortcutService
     public Task<IReadOnlyList<string>> SyncAllAsync(IEnumerable<AppGroup> groups) =>
         _sta.InvokeAsync<IReadOnlyList<string>>(() =>
         {
+            Directory.CreateDirectory(_shortcutsDirectory);
             var orderedGroups = groups.OrderBy(group => group.Order).ToList();
             var created = new List<string>();
             var keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
