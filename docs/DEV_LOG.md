@@ -1,5 +1,31 @@
 # 開發紀錄
 
+## 2026-11-21 - v1.13.0
+
+### 目標
+
+「加入檔案」後改用執行檔的「檔案描述」（FileDescription）作為項目名稱，讓清單顯示更接近使用者熟悉的程式名稱。
+
+### 變更
+
+- `Services/AppFileInfoService.cs`：新增服務，於背景執行緒讀取 `FileVersionInfo.FileDescription`（空白或例外時回傳 `null`）；`.lnk` 會透過 STA 解析目標執行檔再讀取描述，並跳過帶有 AppUserModelID 的捷徑。
+- `Helpers/ShortcutLinkReader.cs`：抽出 `.lnk` 讀取邏輯（目標、參數、工作目錄、`shell:AppsFolder` AUMID 與 AppUserModelID 屬性），供探索與命名共用。
+- `Services/DiscoveryService.cs`：`CreateFromLink` 改用 `ShortcutLinkReader`，行為維持不變；移除重複的 COM 讀取程式碼。
+- `ViewModels/EditorViewModel.cs`：`AddFileAsync` 先以檔名建立項目並載入圖示，同時非同步套用檔案描述，描述為空時保留檔名。
+- `Services/StartupCoordinator.cs`、`Services/EditorBootstrap.cs`：注入並註冊 `AppFileInfoService`。
+- `tests/TaskbarFolders.Tests/AppFileInfoServiceTests.cs`：新增描述讀取、非 PE 檔、檔案不存在、`.lnk` 目標解析與 AUMID 捷徑維持檔名等測試。
+- `Directory.Build.props`：版本 1.13.0、`FileVersion` 1.13.0.0（`AssemblyVersion` 維持 1.7.0.0）。
+
+### 問題與解法
+
+- 非 PE 的 `.exe` 檔案呼叫 `FileVersionInfo.GetVersionInfo` 不會丟例外，而是回傳空描述，因此統一以「空白視為失敗」並 fallback 檔名。
+- UWP／Store 捷徑的目標常是 `explorer.exe`，直接讀描述會得到錯誤名稱；改為偵測 AUMID（參數中的 `shell:AppsFolder` 或捷徑屬性）後不覆寫名稱。
+- `FileVersionInfo` 可能因網路磁碟或損毀檔而阻塞，改在 `Task.Run` 執行，避免占用 UI 執行緒。
+
+### 待辦 / 已知限制
+
+- 尚未實測各種第三方安裝程式建立的 `.lnk`（含自訂 AppUserModelID）在真實開始功能表中的命名結果。
+
 ## 2026-11-20 - v1.12.2
 
 ### 目標

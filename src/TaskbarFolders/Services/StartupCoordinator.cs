@@ -10,6 +10,7 @@ public sealed class StartupCoordinator
 {
     private readonly ConfigService _config;
     private readonly DiscoveryService _discovery;
+    private readonly AppFileInfoService _fileInfo;
     private readonly IconService _icon;
     private readonly ShortcutService _shortcut;
     private readonly GroupTransferService _transfer;
@@ -22,6 +23,7 @@ public sealed class StartupCoordinator
     public StartupCoordinator(
         ConfigService config,
         DiscoveryService discovery,
+        AppFileInfoService fileInfo,
         IconService icon,
         ShortcutService shortcut,
         GroupTransferService transfer,
@@ -33,6 +35,7 @@ public sealed class StartupCoordinator
     {
         _config = config;
         _discovery = discovery;
+        _fileInfo = fileInfo;
         _icon = icon;
         _shortcut = shortcut;
         _transfer = transfer;
@@ -57,6 +60,7 @@ public sealed class StartupCoordinator
         var viewModel = new EditorViewModel(
             _config,
             _discovery,
+            _fileInfo,
             _icon,
             _shortcut,
             _transfer,

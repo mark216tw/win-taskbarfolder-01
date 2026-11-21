@@ -17,6 +17,7 @@ public partial class EditorViewModel : ObservableObject
 {
     private readonly ConfigService _config;
     private readonly DiscoveryService _discovery;
+    private readonly AppFileInfoService _fileInfo;
     private readonly IconService _icon;
     private readonly ShortcutService _shortcut;
     private readonly GroupTransferService _transfer;
@@ -34,6 +35,7 @@ public partial class EditorViewModel : ObservableObject
     public EditorViewModel(
         ConfigService config,
         DiscoveryService discovery,
+        AppFileInfoService fileInfo,
         IconService icon,
         ShortcutService shortcut,
         GroupTransferService transfer,
@@ -43,6 +45,7 @@ public partial class EditorViewModel : ObservableObject
     {
         _config = config;
         _discovery = discovery;
+        _fileInfo = fileInfo;
         _icon = icon;
         _shortcut = shortcut;
         _transfer = transfer;
@@ -367,7 +370,9 @@ public partial class EditorViewModel : ObservableObject
         var viewModel = new ItemViewModel(item);
         SelectedGroup.Items.Add(viewModel);
         SelectedItem = viewModel;
-        await LoadItemIconAsync(viewModel);
+        await Task.WhenAll(
+            LoadItemIconAsync(viewModel),
+            ApplyFileDescriptionAsync(viewModel, path));
     }
 
     [RelayCommand]
@@ -794,6 +799,15 @@ public partial class EditorViewModel : ObservableObject
             ? null
             : BuiltInIconCatalog.CreatePreviewImage(definition.Id);
         return Task.CompletedTask;
+    }
+
+    private async Task ApplyFileDescriptionAsync(ItemViewModel item, string path)
+    {
+        var description = await _fileInfo.ResolveDisplayNameAsync(path);
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            item.Name = description;
+        }
     }
 
     private async Task LoadItemIconAsync(ItemViewModel item)

@@ -6,12 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
-    <Version>1.12.2</Version>
+    <Version>1.13.0</Version>
     <AssemblyVersion>1.7.0.0</AssemblyVersion>
-    <FileVersion>1.12.2.0</FileVersion>
+    <FileVersion>1.13.0.0</FileVersion>
     <Copyright>Copyright © 2026 Mark (mark216tw)</Copyright>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Release' and '$(RuntimeIdentifier)' != ''">true</PublishReadyToRun>
     <Product>TaskbarFolders</Product>
+    <AssemblyTitle>TaskbarFolders</AssemblyTitle>
     <Authors>Mark</Authors>
     <Company>Mark</Company>
     <NeutralLanguage>zh-TW</NeutralLanguage>

@@ -1,6 +1,5 @@
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using Mark.TaskbarFolders.Helpers;
 using Mark.TaskbarFolders.Models;
 using Microsoft.Extensions.Logging;
@@ -272,64 +271,42 @@ public sealed class DiscoveryService
 
     private static DiscoveredApp? CreateFromLink(string path, string category)
     {
-        var link = (IShellLinkW)new ShellLink();
-        try
+        var info = ShortcutLinkReader.TryRead(path);
+        if (info is null)
         {
-            ((IPersistFile)link).Load(path, 0);
+            return null;
+        }
 
-            var target = ReadLinkString(link, static (shellLink, buffer) =>
-                shellLink.GetPath(buffer, buffer.Capacity, IntPtr.Zero, 0));
-            var arguments = ReadLinkString(link, static (shellLink, buffer) =>
-                shellLink.GetArguments(buffer, buffer.Capacity));
-            var workingDirectory = ReadLinkString(link, static (shellLink, buffer) =>
-                shellLink.GetWorkingDirectory(buffer, buffer.Capacity));
-            var iconBuffer = new StringBuilder(1024);
-            link.GetIconLocation(iconBuffer, iconBuffer.Capacity, out _);
+        var link = info.Value;
+        var name = Path.GetFileNameWithoutExtension(path);
 
-            target = Environment.ExpandEnvironmentVariables(target.Trim().Trim('"'));
-            arguments = arguments.Trim();
-
-            if (arguments.Contains("shell:AppsFolder\\", StringComparison.OrdinalIgnoreCase))
-            {
-                var index = arguments.IndexOf("shell:AppsFolder\\", StringComparison.OrdinalIgnoreCase);
-                var aumid = arguments[(index + "shell:AppsFolder\\".Length)..].Trim().Trim('"');
-                if (!string.IsNullOrWhiteSpace(aumid))
-                {
-                    return new DiscoveredApp(
-                        Path.GetFileNameWithoutExtension(path),
-                        AppsFolderPrefix + aumid,
-                        null,
-                        null,
-                        AppItemKind.Uwp,
-                        null,
-                        aumid,
-                        category);
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(target))
-            {
-                target = path;
-            }
-
-            var kind = target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                ? AppItemKind.Executable
-                : AppItemKind.Shortcut;
-
+        if (!string.IsNullOrWhiteSpace(link.Aumid))
+        {
             return new DiscoveredApp(
-                Path.GetFileNameWithoutExtension(path),
-                target,
-                string.IsNullOrWhiteSpace(arguments) ? null : arguments,
-                string.IsNullOrWhiteSpace(workingDirectory) ? Path.GetDirectoryName(path) : workingDirectory,
-                kind,
-                path,
+                name,
+                AppsFolderPrefix + link.Aumid,
                 null,
+                null,
+                AppItemKind.Uwp,
+                null,
+                link.Aumid,
                 category);
         }
-        finally
-        {
-            ShellPropertyHelpers.ReleaseComObject(link);
-        }
+
+        var target = string.IsNullOrWhiteSpace(link.Target) ? path : link.Target;
+        var kind = target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+            ? AppItemKind.Executable
+            : AppItemKind.Shortcut;
+
+        return new DiscoveredApp(
+            name,
+            target,
+            link.Arguments,
+            link.WorkingDirectory ?? Path.GetDirectoryName(path),
+            kind,
+            path,
+            null,
+            category);
     }
 
     private static DiscoveredApp? CreateFromUrl(string path, string category)
@@ -371,13 +348,6 @@ public sealed class DiscoveryService
             File.Exists(iconFile) ? iconFile : null,
             null,
             category);
-    }
-
-    private static string ReadLinkString(IShellLinkW link, Action<IShellLinkW, StringBuilder> read)
-    {
-        var buffer = new StringBuilder(2048);
-        read(link, buffer);
-        return buffer.ToString();
     }
 
     private static bool IsShortcutFile(string path)

@@ -169,6 +169,7 @@ public sealed class EditorBootstrap : IDisposable
         services.AddSingleton<StaExecutor>();
         services.AddSingleton<ConfigService>();
         services.AddSingleton<DiscoveryService>();
+        services.AddSingleton<AppFileInfoService>();
         services.AddSingleton<IconService>();
         services.AddSingleton<LaunchService>();
         services.AddSingleton<ShortcutService>();
