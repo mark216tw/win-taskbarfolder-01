@@ -107,4 +107,47 @@ public partial class FlyoutViewModel : ObservableObject
             return false;
         }
     }
+
+    public async Task<bool> MoveItemAsync(ItemViewModel item, int targetIndex)
+    {
+        var oldIndex = Items.IndexOf(item);
+        if (oldIndex < 0)
+        {
+            return false;
+        }
+
+        var clamped = Math.Clamp(targetIndex, 0, Items.Count - 1);
+        if (clamped == oldIndex)
+        {
+            return true;
+        }
+
+        Items.Move(oldIndex, clamped);
+        var orderedIds = Items.Select(candidate => candidate.Id).ToArray();
+
+        try
+        {
+            if (await _config.ReorderItemsAsync(_groupId, orderedIds))
+            {
+                return true;
+            }
+
+            if (Items.IndexOf(item) == clamped)
+            {
+                Items.Move(clamped, oldIndex);
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to reorder flyout item {Name}", item.Name);
+            if (Items.IndexOf(item) == clamped)
+            {
+                Items.Move(clamped, oldIndex);
+            }
+
+            return false;
+        }
+    }
 }

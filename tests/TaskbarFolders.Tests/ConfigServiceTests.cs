@@ -112,6 +112,78 @@ public sealed class ConfigServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ReorderItemsAsync_PersistsNewOrder()
+    {
+        var service = new ConfigService(_root);
+        await service.SaveAsync(new AppSettings
+        {
+            Groups =
+            [
+                new AppGroup
+                {
+                    Id = "work",
+                    Name = "工作",
+                    Items =
+                    [
+                        new AppItem { Id = "a", Name = "A", Target = @"C:\a.exe" },
+                        new AppItem { Id = "b", Name = "B", Target = @"C:\b.exe" },
+                        new AppItem { Id = "c", Name = "C", Target = @"C:\c.exe" }
+                    ]
+                }
+            ]
+        });
+
+        var reordered = await service.ReorderItemsAsync("work", ["c", "a", "b"]);
+
+        Assert.True(reordered);
+        var loaded = await service.LoadAsync();
+        var ids = Assert.Single(loaded.Groups).Items.Select(item => item.Id).ToArray();
+        Assert.Equal(["c", "a", "b"], ids);
+    }
+
+    [Fact]
+    public async Task ReorderItemsAsync_PreservesUnlistedItemsAndIgnoresUnknownIds()
+    {
+        var service = new ConfigService(_root);
+        await service.SaveAsync(new AppSettings
+        {
+            Groups =
+            [
+                new AppGroup
+                {
+                    Id = "work",
+                    Name = "工作",
+                    Items =
+                    [
+                        new AppItem { Id = "a", Name = "A", Target = @"C:\a.exe" },
+                        new AppItem { Id = "b", Name = "B", Target = @"C:\b.exe" },
+                        new AppItem { Id = "c", Name = "C", Target = @"C:\c.exe" }
+                    ]
+                }
+            ]
+        });
+
+        var reordered = await service.ReorderItemsAsync("work", ["unknown", "c", "c", "a"]);
+
+        Assert.True(reordered);
+        var loaded = await service.LoadAsync();
+        var ids = Assert.Single(loaded.Groups).Items.Select(item => item.Id).ToArray();
+        Assert.Equal(["c", "a", "b"], ids);
+    }
+
+    [Fact]
+    public async Task ReorderItemsAsync_ReturnsFalseWhenGroupMissing()
+    {
+        var service = new ConfigService(_root);
+        await service.SaveAsync(new AppSettings
+        {
+            Groups = [new AppGroup { Id = "work", Name = "工作" }]
+        });
+
+        Assert.False(await service.ReorderItemsAsync("missing", ["a", "b"]));
+    }
+
+    [Fact]
     public async Task LoadMissingFile_ReturnsEmptySettings()
     {
         var service = new ConfigService(_root);

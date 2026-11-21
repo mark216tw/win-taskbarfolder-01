@@ -104,6 +104,81 @@ public sealed class ConfigService
         }
     }
 
+    public async Task<bool> ReorderItemsAsync(
+        string groupId,
+        IReadOnlyList<string> orderedItemIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(groupId);
+        ArgumentNullException.ThrowIfNull(orderedItemIds);
+
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var settings = await LoadCoreAsync(cancellationToken).ConfigureAwait(false);
+            var group = settings.Groups.FirstOrDefault(
+                candidate => candidate.Id.Equals(groupId, StringComparison.OrdinalIgnoreCase));
+
+            if (group is null)
+            {
+                return false;
+            }
+
+            if (group.Items.Count <= 1)
+            {
+                return true;
+            }
+
+            var itemsById = new Dictionary<string, AppItem>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in group.Items)
+            {
+                itemsById[item.Id] = item;
+            }
+
+            var reordered = new List<AppItem>(group.Items.Count);
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var id in orderedItemIds)
+            {
+                if (seen.Add(id) && itemsById.TryGetValue(id, out var item))
+                {
+                    reordered.Add(item);
+                }
+            }
+
+            foreach (var item in group.Items)
+            {
+                if (seen.Add(item.Id))
+                {
+                    reordered.Add(item);
+                }
+            }
+
+            var changed = false;
+            for (var index = 0; index < group.Items.Count; index++)
+            {
+                if (!ReferenceEquals(group.Items[index], reordered[index]))
+                {
+                    changed = true;
+                    break;
+                }
+            }
+
+            if (!changed)
+            {
+                return true;
+            }
+
+            group.Items = reordered;
+            await SaveCoreAsync(settings, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private async Task SaveCoreAsync(AppSettings settings, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(RootDirectory);

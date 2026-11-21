@@ -11,9 +11,8 @@ internal sealed class DropInsertionAdorner : Adorner
 
     private readonly Pen _pen;
     private bool _isVisible;
-    private double _y;
-    private double _left;
-    private double _right;
+    private Point _start;
+    private Point _end;
 
     public DropInsertionAdorner(UIElement adornedElement)
         : base(adornedElement)
@@ -31,11 +30,16 @@ internal sealed class DropInsertionAdorner : Adorner
         Opacity = 0;
     }
 
-    public void ShowAt(double y, double left, double right)
+    public void ShowAt(double y, double left, double right) =>
+        ShowLine(new Point(left, y), new Point(Math.Max(left, right), y));
+
+    public void ShowVerticalAt(double x, double top, double bottom) =>
+        ShowLine(new Point(x, top), new Point(x, Math.Max(top, bottom)));
+
+    private void ShowLine(Point start, Point end)
     {
-        _y = y;
-        _left = left;
-        _right = Math.Max(left, right);
+        _start = start;
+        _end = end;
         InvalidateVisual();
 
         if (_isVisible)
@@ -72,10 +76,8 @@ internal sealed class DropInsertionAdorner : Adorner
             return;
         }
 
-        var start = new Point(_left, _y);
-        var end = new Point(_right, _y);
-        drawingContext.DrawLine(_pen, start, end);
-        drawingContext.DrawEllipse(_pen.Brush, null, start, 2.5, 2.5);
-        drawingContext.DrawEllipse(_pen.Brush, null, end, 2.5, 2.5);
+        drawingContext.DrawLine(_pen, _start, _end);
+        drawingContext.DrawEllipse(_pen.Brush, null, _start, 2.5, 2.5);
+        drawingContext.DrawEllipse(_pen.Brush, null, _end, 2.5, 2.5);
     }
 }

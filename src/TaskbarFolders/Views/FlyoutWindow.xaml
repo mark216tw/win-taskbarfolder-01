@@ -57,7 +57,13 @@
             <Grid Grid.Row="1">
                 <ListBox x:Name="ItemList"
                          ItemsSource="{Binding Items}"
+                         AllowDrop="True"
+                         PreviewMouseLeftButtonDown="OnListPreviewMouseLeftButtonDown"
                          PreviewMouseLeftButtonUp="OnListMouseUp"
+                         PreviewMouseMove="OnListPreviewMouseMove"
+                         DragOver="OnListDragOver"
+                         DragLeave="OnListDragLeave"
+                         Drop="OnListDrop"
                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          AutomationProperties.Name="{Binding GroupName}">

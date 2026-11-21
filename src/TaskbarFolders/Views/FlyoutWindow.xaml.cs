@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Mark.TaskbarFolders.Helpers;
 using Mark.TaskbarFolders.Resources;
 using Mark.TaskbarFolders.ViewModels;
@@ -23,6 +25,16 @@ public partial class FlyoutWindow : Window
     private bool _suppressDeactivate;
     private bool _renameInProgress;
     private long _shownAt;
+    private Point _dragStart;
+    private ItemViewModel? _dragCandidate;
+    private ItemViewModel? _draggedItem;
+    private ListBoxItem? _draggedContainer;
+    private AdornerLayer? _adornerLayer;
+    private DragGhostAdorner? _dragGhost;
+    private DropInsertionAdorner? _insertionAdorner;
+    private double _draggedOpacity = 1;
+    private bool _dropCompleted;
+    private bool _isDragging;
 
     public FlyoutWindow(FlyoutViewModel viewModel, TaskbarGeometryService geometry)
     {
@@ -259,10 +271,306 @@ public partial class FlyoutWindow : Window
         }
     }
 
+    private void OnListPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _dragStart = e.GetPosition(ItemList);
+        _dragCandidate = FindAncestor<ListBoxItem>(e.OriginalSource as DependencyObject)?.DataContext
+            as ItemViewModel;
+        _isDragging = false;
+    }
+
+    private void OnListPreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed ||
+            _dragCandidate is null ||
+            _renameInProgress ||
+            _viewModel.Items.Count <= 1)
+        {
+            return;
+        }
+
+        var position = e.GetPosition(ItemList);
+        if (Math.Abs(position.X - _dragStart.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(position.Y - _dragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        var item = _dragCandidate;
+        _dragCandidate = null;
+        _dropCompleted = false;
+        _isDragging = true;
+        _suppressDeactivate = true;
+
+        var container = ItemList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
+        BeginDragVisuals(item, container, position);
+
+        try
+        {
+            DragDrop.DoDragDrop(ItemList, new DataObject(typeof(ItemViewModel), item), DragDropEffects.Move);
+        }
+        finally
+        {
+            var dropCompleted = _dropCompleted;
+            EndDragVisuals();
+            _isDragging = false;
+            if (!_renameInProgress)
+            {
+                _suppressDeactivate = false;
+            }
+
+            if (dropCompleted)
+            {
+                ItemList.SelectedItem = item;
+                AnimateItemDrop(item);
+            }
+        }
+    }
+
+    private void OnListDragOver(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(typeof(ItemViewModel)))
+        {
+            e.Effects = DragDropEffects.None;
+            _insertionAdorner?.Hide();
+            e.Handled = true;
+            return;
+        }
+
+        e.Effects = DragDropEffects.Move;
+        _dragGhost?.UpdatePosition(e.GetPosition(ItemList));
+        UpdateInsertionIndicator(e);
+        e.Handled = true;
+    }
+
+    private void OnListDragLeave(object sender, DragEventArgs e) =>
+        _insertionAdorner?.Hide();
+
+    private async void OnListDrop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(typeof(ItemViewModel)) is not ItemViewModel dragged)
+        {
+            return;
+        }
+
+        var oldIndex = _viewModel.Items.IndexOf(dragged);
+        if (oldIndex < 0)
+        {
+            return;
+        }
+
+        var targetItem = FindAncestor<ListBoxItem>(e.OriginalSource as DependencyObject);
+        int destination;
+        if (targetItem?.DataContext is ItemViewModel target)
+        {
+            if (ReferenceEquals(target, dragged))
+            {
+                return;
+            }
+
+            var targetIndex = _viewModel.Items.IndexOf(target);
+            if (targetIndex < 0)
+            {
+                return;
+            }
+
+            destination = e.GetPosition(targetItem).X > targetItem.ActualWidth / 2
+                ? targetIndex + 1
+                : targetIndex;
+
+            if (oldIndex < targetIndex)
+            {
+                destination--;
+            }
+        }
+        else
+        {
+            destination = _viewModel.Items.Count - 1;
+        }
+
+        _insertionAdorner?.Hide();
+
+        var clampedDestination = Math.Clamp(destination, 0, _viewModel.Items.Count - 1);
+        _dropCompleted = clampedDestination != oldIndex;
+        e.Handled = true;
+
+        if (!_dropCompleted)
+        {
+            return;
+        }
+
+        if (!await _viewModel.MoveItemAsync(dragged, clampedDestination) && IsLoaded)
+        {
+            _suppressDeactivate = true;
+            try
+            {
+                MessageBox.Show(
+                    this,
+                    Strings.Get("ErrorReorderItems"),
+                    Strings.Get("ErrorTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            finally
+            {
+                _suppressDeactivate = false;
+                Activate();
+                ItemList.Focus();
+            }
+        }
+    }
+
+    private void BeginDragVisuals(ItemViewModel item, ListBoxItem? container, Point position)
+    {
+        _draggedItem = item;
+        _draggedContainer = container;
+        _adornerLayer = AdornerLayer.GetAdornerLayer(ItemList);
+
+        if (_adornerLayer is null)
+        {
+            return;
+        }
+
+        if (container is not null)
+        {
+            _draggedOpacity = container.Opacity;
+            container.Opacity = 0.35;
+
+            _dragGhost = new DragGhostAdorner(ItemList, container);
+            _dragGhost.UpdatePosition(position);
+            _adornerLayer.Add(_dragGhost);
+        }
+
+        _insertionAdorner = new DropInsertionAdorner(ItemList);
+        _adornerLayer.Add(_insertionAdorner);
+    }
+
+    private void EndDragVisuals()
+    {
+        if (_draggedContainer is not null)
+        {
+            _draggedContainer.Opacity = _draggedOpacity;
+        }
+
+        if (_adornerLayer is not null)
+        {
+            if (_dragGhost is not null)
+            {
+                _adornerLayer.Remove(_dragGhost);
+            }
+
+            if (_insertionAdorner is not null)
+            {
+                _adornerLayer.Remove(_insertionAdorner);
+            }
+        }
+
+        _dragGhost = null;
+        _insertionAdorner = null;
+        _adornerLayer = null;
+        _draggedItem = null;
+        _draggedContainer = null;
+        _draggedOpacity = 1;
+    }
+
+    private void UpdateInsertionIndicator(DragEventArgs e)
+    {
+        if (_insertionAdorner is null)
+        {
+            return;
+        }
+
+        if (_draggedItem is null)
+        {
+            _insertionAdorner.Hide();
+            return;
+        }
+
+        var targetItem = FindAncestor<ListBoxItem>(e.OriginalSource as DependencyObject);
+        if (targetItem?.DataContext is ItemViewModel target)
+        {
+            if (ReferenceEquals(target, _draggedItem))
+            {
+                _insertionAdorner.Hide();
+                return;
+            }
+
+            var position = e.GetPosition(targetItem);
+            var offsetX = position.X > targetItem.ActualWidth / 2
+                ? targetItem.ActualWidth
+                : 0;
+            var top = targetItem.TranslatePoint(new Point(offsetX, 4), ItemList);
+            var bottom = top.Y + Math.Max(0, targetItem.ActualHeight - 8);
+            _insertionAdorner.ShowVerticalAt(top.X, top.Y, bottom);
+            return;
+        }
+
+        var last = _viewModel.Items.LastOrDefault();
+        var lastContainer = last is null
+            ? null
+            : ItemList.ItemContainerGenerator.ContainerFromItem(last) as ListBoxItem;
+
+        if (lastContainer is null || ReferenceEquals(last, _draggedItem))
+        {
+            _insertionAdorner.Hide();
+            return;
+        }
+
+        var endTop = lastContainer.TranslatePoint(new Point(lastContainer.ActualWidth, 4), ItemList);
+        var endBottom = endTop.Y + Math.Max(0, lastContainer.ActualHeight - 8);
+        _insertionAdorner.ShowVerticalAt(endTop.X, endTop.Y, endBottom);
+    }
+
+    private void AnimateItemDrop(ItemViewModel item)
+    {
+        ItemList.UpdateLayout();
+        if (ItemList.ItemContainerGenerator.ContainerFromItem(item) is not ListBoxItem container)
+        {
+            return;
+        }
+
+        var duration = TimeSpan.FromMilliseconds(180);
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+        container.BeginAnimation(
+            UIElement.OpacityProperty,
+            new DoubleAnimation(0.35, 1, duration)
+            {
+                EasingFunction = easing,
+                FillBehavior = FillBehavior.Stop
+            });
+
+        var transform = new ScaleTransform(1, 1);
+        container.RenderTransformOrigin = new Point(0.5, 0.5);
+        container.RenderTransform = transform;
+
+        transform.BeginAnimation(
+            ScaleTransform.ScaleXProperty,
+            new DoubleAnimation(0.92, 1, duration)
+            {
+                EasingFunction = easing,
+                FillBehavior = FillBehavior.Stop
+            });
+        transform.BeginAnimation(
+            ScaleTransform.ScaleYProperty,
+            new DoubleAnimation(0.92, 1, duration)
+            {
+                EasingFunction = easing,
+                FillBehavior = FillBehavior.Stop
+            });
+    }
+
     private void OnListMouseUp(object sender, MouseButtonEventArgs e)
     {
+        var candidate = _dragCandidate;
+        _dragCandidate = null;
+        if (_isDragging || candidate is null)
+        {
+            return;
+        }
+
         var item = FindAncestor<ListBoxItem>(e.OriginalSource as DependencyObject);
-        if (item?.DataContext is ItemViewModel viewModel)
+        if (item?.DataContext is ItemViewModel viewModel && ReferenceEquals(viewModel, candidate))
         {
             _viewModel.Launch(viewModel);
         }

@@ -574,6 +574,9 @@
   <data name="ErrorEditDisplayName" xml:space="preserve">
     <value>無法儲存顯示名稱，請稍後再試。</value>
   </data>
+  <data name="ErrorReorderItems" xml:space="preserve">
+    <value>無法儲存項目排序，請稍後再試。</value>
+  </data>
   <data name="AboutSection" xml:space="preserve">
     <value>關於</value>
   </data>

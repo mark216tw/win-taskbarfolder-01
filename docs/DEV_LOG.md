@@ -1,5 +1,30 @@
 # 開發紀錄
 
+## 2026-11-21 - v1.14.0
+
+### 目標
+
+在飛出面板提供項目拖曳排序功能，使用者可按住圖示拖曳調整順序並立即儲存。
+
+### 變更
+
+- `Services/ConfigService.cs`：新增 `ReorderItemsAsync`，依指定項目 Id 順序重排分類項目並寫回 `config.json`（略過無效／重複 Id 並保留未列出的既有項目）。
+- `ViewModels/FlyoutViewModel.cs`：新增 `MoveItemAsync`，即時移動 `Items` 並呼叫 `ConfigService.ReorderItemsAsync` 持久化，失敗時回滾順序。
+- `Views/DropInsertionAdorner.cs`：新增 `ShowVerticalAt`，讓插入指示線同時支援水平（直向清單）與垂直（飛出面板 `WrapPanel` 格狀排版）。
+- `Views/FlyoutWindow.xaml`、`Views/FlyoutWindow.xaml.cs`：啟用 `ItemList` 拖放事件，支援按住圖示拖曳重排、半透明拖曳預覽（`DragGhostAdorner`）、垂直插入線（`DropInsertionAdorner`）與放置動畫；拖曳期間暫停失焦自動關閉，並區分點擊啟動與拖曳排序。
+- `Resources/Strings.resx`：新增 `ErrorReorderItems` 錯誤提示字串。
+- `tests/TaskbarFolders.Tests/ConfigServiceTests.cs`：新增 `ReorderItemsAsync` 正常排序、保留未列出項目／略過未知與重複 Id、分類不存在等單元測試。
+- `Directory.Build.props`：版本 1.14.0、`FileVersion` 1.14.0.0（`AssemblyVersion` 維持 1.7.0.0）。
+
+### 問題與解法
+
+- 飛出面板點擊圖示即啟動程式（`PreviewMouseLeftButtonUp`），改以記錄按下時的候選項目與拖曳旗標，僅在未觸發拖曳且於同一項目放開滑鼠時才啟動。
+- `DragDrop.DoDragDrop` 執行期間可能觸發視窗失焦，透過 `_suppressDeactivate` 避免拖曳中途關閉飛出面板。
+
+### 待辦 / 已知限制
+
+- 若編輯器視窗同時開啟，在飛出面板調整順序後，編輯器需重新開啟才會顯示最新排序。
+
 ## 2026-11-21 - v1.13.0
 
 ### 目標
